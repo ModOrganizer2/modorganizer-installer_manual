@@ -104,7 +104,7 @@ void InstallerManual::openFile(const QString &fileName)
   execInfo.lpFile = fileNameW.c_str();
   execInfo.nShow = SW_SHOWNORMAL;
   if (!::ShellExecuteExW(&execInfo)) {
-    qCritical("failed to spawn %s: %d", tempName.toUtf8().constData(), ::GetLastError());
+    qCritical("failed to spawn %s: %d", qUtf8Printable(tempName), ::GetLastError());
   }
 }
 
