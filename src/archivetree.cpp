@@ -75,6 +75,15 @@ static bool isAncestor(const QTreeWidgetItem *ancestor, const QTreeWidgetItem *i
   return false;
 }
 
+void ArchiveTree::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles) 
+{
+  QTreeWidget::dataChanged(topLeft, bottomRight, roles);
+
+  if (roles.contains(Qt::CheckStateRole)) {
+    emit changed();
+  }
+}
+
 void ArchiveTree::dropEvent(QDropEvent *event)
 {
   event->ignore();
