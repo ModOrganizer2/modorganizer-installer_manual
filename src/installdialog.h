@@ -89,21 +89,43 @@ private:
   void updateProblems();
 
   /**
+   * @brief Detach the entry of this item from its parent, and recursively detach
+   *     all of its parent if they become empty.
+   *
+   * @param item The item to detach.
+   */
+  void detachParents(ArchiveTreeWidgetItem* item);
+
+  /**
+   * @brief Re-attach the entry of this item to its parent, and recursively attach
+   *    all of its parent if they were empty (and thus detached).
+   *
+   * @param item The item to attach.
+   */
+  void attachParents(ArchiveTreeWidgetItem* item);
+
+  /**
+   * @brief Recursively re-insert all the entries below the given item in their
+   *     corresponding parents. This method does not recurse in items that have not 
+   *     been populated yet.
+   *
+   * @param item The top-level item to start.
+   */
+  void recursiveInsert(ArchiveTreeWidgetItem* item);
+
+  /**
+   * @brief Recursively detach all the entries below the given item from their
+   *     corresponding parents. This method does not recurse in items that have not 
+   *     been populated yet.
+   *
+   * @param item The top-level item to start.
+   */
+  void recursiveDetach(ArchiveTreeWidgetItem* item);
+
+  /**
    * @brief Set the data root widget.
    */
   void setDataRoot(ArchiveTreeWidgetItem* const root);
-
-  /**
-   * @brief Unset the currently used data.
-   */
-  void unsetData();
-
-  /**
-   * @brief Use the given tree item as the data folder.
-   * 
-   * @param treeItem The item to use.
-   */
-  void useAsData(ArchiveTreeWidgetItem *treeItem);
 
   /**
    * @brief Create a directory under the given tree item, asking
@@ -117,7 +139,6 @@ private slots:
 
   // The two slots to connect to the tree:
   void onItemMoved(ArchiveTreeWidgetItem* source, ArchiveTreeWidgetItem* target);
-  void onItemChanged(QTreeWidgetItem* item, int column);
   void onTreeCheckStateChanged(ArchiveTreeWidgetItem* item);
 
   // Automatic slots that are directly bound to the UI:
@@ -130,6 +151,9 @@ private:
 
   ArchiveTreeWidget *m_Tree;
   QLabel *m_ProblemLabel;
+
+  // IMPORTANT: If you intend to work on this and understand this, read the detailed
+  // explanation at the beginning of the installdialog.cpp file.
 
   // The tree root is the initial root that will never change (should be const
   // but cannot be since the parent tree cannot be consstructed in the member

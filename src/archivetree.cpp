@@ -73,7 +73,9 @@ void ArchiveTreeWidgetItem::setData(int column, int role, const QVariant& value)
   QTreeWidgetItem::setData(column, role, value);
   if (tree != nullptr && tree->m_Emitter == this) {
     tree->m_Emitter = nullptr;
-    tree->emitTreeCheckStateChanged(this);
+    if (role == Qt::CheckStateRole) {
+      tree->emitTreeCheckStateChanged(this);
+    }
   }
 }
 

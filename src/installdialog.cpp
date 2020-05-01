@@ -30,6 +30,40 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMetaType>
 #include <QMessageBox>
 
+// Implementation details for the ArchiveTree widget:
+// 
+// The ArchiveTreeWidget presents to the user the underlying IFileTree, but in order
+// to increase performance, the tree is populated dynamically when required. Populating
+// the tree is currently required: 
+//   1) when a branch of the tree widget is expanded,
+//   2) when an item is moved to a tree, 
+//   3) when a directory is created,
+//   4) when a directory is "set as data root".
+//
+// Case 1 is handled automatically in the setExpanded method of ArchiveTreeWidget. Cases 2 
+// and 3 could be dealt with differently, but populating the tree before inserting an item 
+// makes everything else easier (not that populating the widget is different from populating 
+// the IFileTree which is done automatically). Case 4 is handled manually in setDataRoot.
+//
+// Another specificity of the implementation is the treeCheckStateChanged() signal emitted
+// by the ArchiveTreeWidget. This signal is used to avoid having to connect to the itemChanged()
+// signal or overriding the dataChanged() method which are called much more often than those.
+// The treeCheckStateChanged() signal is send only for the item that has actually been changed
+// by the user. While the interface is automatically updated by Qt, we need to update the
+// underlying tree manually. This is done by doing the following things:
+//   1) When an item is unchecked:
+//      - We detach the corresponding entry from its parent, and recursively detach the empty
+//        parents (or the ones that become empty).
+//      - If the entry is a directory and the item has been populated, we recursively detach 
+//        all the child entries for all the child items that have been populated (no need to
+//        do it for non-populated items)>
+//   2) When an item is checked, we do the same process but we re-attach parents and re-insert
+//      children.
+//
+// Detaching or re-attaching parents is also done when a directory is created (if the directory
+// is created in an empty directory, we need to re-attach), or when an item is moved (if the
+// directory the item comes from is now empty or if the target directory was empty).
+
 using namespace MOBase;
 
 
@@ -117,19 +151,6 @@ bool InstallDialog::testForProblem()
 }
 
 
-void dumpTree(IFileTree const* tree, QString indent = "") {
-  log::debug("{}{}/", indent, tree->name());
-  indent += "    ";
-  for (auto entry : *tree) {
-    if (entry->isDir()) {
-      dumpTree(entry->astree().get(), indent);
-    }
-    else {
-      log::debug("{}{}", indent, entry->name());
-    }
-  }
-}
-
 void InstallDialog::updateProblems()
 {
   if (testForProblem()) {
@@ -163,17 +184,54 @@ void InstallDialog::setDataRoot(ArchiveTreeWidgetItem* const root)
   updateProblems();
 }
 
-void InstallDialog::useAsData(ArchiveTreeWidgetItem* item)
-{
-  setDataRoot(item);
-  updateProblems();
+
+void InstallDialog::detachParents(ArchiveTreeWidgetItem* item) {
+  auto entry = item->entry();
+  auto parent = entry->parent();
+  entry->detach();
+  while (parent != nullptr && parent->empty()) {
+    auto tmp = parent->parent();
+    parent->detach();
+    parent = tmp;
+  }
+
+}
+
+void InstallDialog::attachParents(ArchiveTreeWidgetItem* item) {
+  while (item->parent() != nullptr) {
+    auto parent = static_cast<ArchiveTreeWidgetItem*>(item->parent());
+    auto parentEntry = parent->entry();
+    if (parentEntry != nullptr) {
+      parentEntry->astree()->insert(item->entry());
+    }
+    item = parent;
+  }
 }
 
 
-void InstallDialog::unsetData()
-{
-  setDataRoot(m_TreeRoot);
-  updateProblems();
+void InstallDialog::recursiveInsert(ArchiveTreeWidgetItem* item) {
+  if (item->isPopulated()) {
+    auto tree = item->entry()->astree();
+    for (int i = 0; i < item->childCount(); ++i) {
+      auto child = static_cast<ArchiveTreeWidgetItem*>(item->child(i));
+      tree->insert(child->entry());
+      if (child->entry()->isDir()) {
+        recursiveInsert(child);
+      }
+    }
+  }
+}
+
+void InstallDialog::recursiveDetach(ArchiveTreeWidgetItem* item) {
+  if (item->isPopulated()) {
+    for (int i = 0; i < item->childCount(); ++i) {
+      auto child = static_cast<ArchiveTreeWidgetItem*>(item->child(i));
+      if (child->entry()->isDir()) {
+        recursiveDetach(child);
+      }
+    }
+    item->entry()->astree()->clear();
+  }
 }
 
 
@@ -209,34 +267,13 @@ void InstallDialog::createDirectoryUnder(ArchiveTreeWidgetItem* item)
       item, fileTree->addDirectory(result));
     item->addChild(newItem);
     newItem->setCheckState(0, Qt::Checked);
+    attachParents(item);
     updateProblems();
 
     m_Tree->scrollToItem(newItem);
   }
 }
 
-void detachParents(ArchiveTreeWidgetItem* item) {
-  auto entry = item->entry();
-  auto parent = entry->parent();
-  entry->detach();
-  while (parent != nullptr && parent->empty()) {
-    auto tmp = parent->parent();
-    parent->detach();
-    parent = tmp;
-  }
-
-}
-
-void attachParents(ArchiveTreeWidgetItem* item) {
-  while (item->parent() != nullptr) {
-    auto parent = static_cast<ArchiveTreeWidgetItem*>(item->parent());
-    auto parentEntry = parent->entry();
-    if (parentEntry != nullptr) {
-      parentEntry->astree()->insert(item->entry());
-    }
-    item = parent;
-  }
-}
 
 void InstallDialog::onItemMoved(ArchiveTreeWidgetItem* source, ArchiveTreeWidgetItem* target) {
   // Just insert the source in the target:
@@ -252,30 +289,6 @@ void InstallDialog::onItemMoved(ArchiveTreeWidgetItem* source, ArchiveTreeWidget
   updateProblems();
 }
 
-void recursiveInsert(ArchiveTreeWidgetItem* item) {
-  if (item->isPopulated()) {
-    auto tree = item->entry()->astree();
-    for (int i = 0; i < item->childCount(); ++i) {
-      auto child = static_cast<ArchiveTreeWidgetItem*>(item->child(i));
-      tree->insert(child->entry());
-      if (child->entry()->isDir()) {
-        recursiveInsert(child);
-      }
-    }
-  }
-}
-
-void recursiveDetach(ArchiveTreeWidgetItem* item) {
-  if (item->isPopulated()) {
-    for (int i = 0; i < item->childCount(); ++i) {
-      auto child = static_cast<ArchiveTreeWidgetItem*>(item->child(i));
-      if (child->entry()->isDir()) {
-        recursiveDetach(child);
-      }
-    }
-    item->entry()->astree()->clear();
-  }
-}
 
 void InstallDialog::onTreeCheckStateChanged(ArchiveTreeWidgetItem* item) {
 
@@ -286,24 +299,23 @@ void InstallDialog::onTreeCheckStateChanged(ArchiveTreeWidgetItem* item) {
   // user uncheck a directory and then check a file under it, the other files would
   // still be attached.
   //
-  // The two recursive methods only go down to the expanded (based on childCount() tree, for 
+  // The two recursive methods only go down to the expanded (based on isPopulated() tree, for 
   // two reasons:
-  //   1. If a tree item has not been expanded, then detaching an entry from its parent will 
+  //   1. If a tree item has not been populated, then detaching an entry from its parent will 
   //      delete it since there would be no remaining shared pointers.
-  //   2. If the tree has not been expanded yet, all the entries under it are still attached,
+  //   2. If the tree has not been populated yet, all the entries under it are still attached,
   //      so there is no need to process them differently. Detaching a non-expanded item can
   //      be done by simply detaching the tree, no need to detach all the children.
   if (entry->isDir()) {
-    if (item->checkState(0) == Qt::Checked && item->childCount() > 0) {
+    if (item->checkState(0) == Qt::Checked && item->isPopulated()) {
       recursiveInsert(item);
     }
-    else if (item->checkState(0) == Qt::Unchecked && item->childCount() > 0) {
+    else if (item->checkState(0) == Qt::Unchecked && item->isPopulated()) {
       recursiveDetach(item);
     }
   }
 
-  // Unchecked: we detach, and then we go up the parent chain removing all
-  // trees that are now empty:
+  // Unchecked: we go up the parent chain removing all trees that are now empty:
   if (item->checkState(0) == Qt::Unchecked) {
     detachParents(item);
   }
@@ -313,27 +325,6 @@ void InstallDialog::onTreeCheckStateChanged(ArchiveTreeWidgetItem* item) {
   }
   
   updateProblems();
-}
-
-void InstallDialog::onItemChanged(QTreeWidgetItem* item, int column) {
-
-  // Retrieve the entry:
-  /*
-  auto entry = static_cast<ArchiveTreeWidgetItem*>(item)->entry();
-
-  // Checked and partially checked are handled the same:
-  if (item->checkState(column) != Qt::Unchecked) {
-    // This should always be the case, but...
-    if (entry->parent() != nullptr) {
-      entry->parent()->astree()->insert(entry);
-    }
-  }
-  else {
-    entry->detach();
-  }
-  */
-
-  // updateProblems();
 }
 
 
@@ -348,11 +339,11 @@ void InstallDialog::on_treeContent_customContextMenuRequested(QPoint pos)
 
   if (m_ViewRoot->entry() == m_TreeRoot->entry()) {
     if (selectedItem != m_ViewRoot && selectedItem->entry()->isDir()) {
-      menu.addAction(tr("Set as data directory"), [this, selectedItem]() { useAsData(selectedItem); });
+      menu.addAction(tr("Set as data directory"), [this, selectedItem]() { setDataRoot(selectedItem); });
     }
   }
   else {
-    menu.addAction(tr("Unset data directory"), this, &InstallDialog::unsetData);
+    menu.addAction(tr("Unset data directory"), [this]() { setDataRoot(m_TreeRoot); });
   }
 
   // Add a separator if not empty:
