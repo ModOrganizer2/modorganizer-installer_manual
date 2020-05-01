@@ -85,15 +85,15 @@ bool InstallerManual::isManualInstaller() const
 }
 
 
-bool InstallerManual::isArchiveSupported(const DirectoryTree&) const
+bool InstallerManual::isArchiveSupported(std::shared_ptr<const MOBase::IFileTree>) const
 {
   return true;
 }
 
 
-void InstallerManual::openFile(const QString &fileName)
+void InstallerManual::openFile(const FileTreeEntry *entry)
 {
-  QString tempName = manager()->extractFile(fileName);
+  QString tempName = manager()->extractFile(entry->shared_from_this());
 
   SHELLEXECUTEINFOW execInfo;
   memset(&execInfo, 0, sizeof(SHELLEXECUTEINFOW));
@@ -109,19 +109,17 @@ void InstallerManual::openFile(const QString &fileName)
 }
 
 
-IPluginInstaller::EInstallResult InstallerManual::install(GuessedValue<QString> &modName, DirectoryTree &tree,
-                                                          QString&, int&)
+IPluginInstaller::EInstallResult InstallerManual::install(
+  GuessedValue<QString> &modName, std::shared_ptr<MOBase::IFileTree> &tree, QString&, int&)
 {
   qDebug("offering installation dialog");
-  InstallDialog dialog(&tree, modName, parentWidget());
-  connect(&dialog, SIGNAL(openFile(QString)), this, SLOT(openFile(QString)));
+  InstallDialog dialog(tree, modName, parentWidget());
+  connect(&dialog, &InstallDialog::openFile, this, &InstallerManual::openFile);
   if (dialog.exec() == QDialog::Accepted) {
     modName.update(dialog.getModName(), GUESS_USER);
 
     // TODO probably more complicated than necessary
-    DirectoryTree *newTree = dialog.getModifiedTree();
-    tree = *newTree;
-    delete newTree;
+    tree = dialog.getModifiedTree();
     return IPluginInstaller::RESULT_SUCCESS;
   } else {
     return IPluginInstaller::RESULT_CANCELED;

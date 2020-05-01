@@ -22,21 +22,20 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "report.h"
 #include "utility.h"
-#include "installationtester.h"
+#include "log.h"
 
 #include <QMenu>
+#include <QCompleter>
 #include <QInputDialog>
+#include <QMetaType>
 #include <QMessageBox>
-
 
 using namespace MOBase;
 
 
-InstallDialog::InstallDialog(DirectoryTree *tree, const GuessedValue<QString> &modName, QWidget *parent)
-  : TutorableDialog("InstallDialog", parent), ui(new Ui::InstallDialog),
-    m_DataTree(tree), m_TreeRoot(nullptr), m_DataRoot(nullptr), m_TreeSelection(nullptr),
-    m_Updating(false)
-{
+InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, QWidget *parent)
+  : TutorableDialog("InstallDialog", parent), ui(new Ui::InstallDialog) {
+
   ui->setupUi(this);
 
   for (auto iter = modName.variants().begin(); iter != modName.variants().end(); ++iter) {
@@ -45,14 +44,27 @@ InstallDialog::InstallDialog(DirectoryTree *tree, const GuessedValue<QString> &m
 
   ui->nameCombo->setCurrentIndex(ui->nameCombo->findText(modName));
 
-  m_Tree = findChild<ArchiveTree*>("treeContent");
+  // Retrieve the tree from the UI and create the various root items (see the
+  // members declaration for more details):
+  m_Tree = findChild<ArchiveTreeWidget*>("treeContent");
 
+  m_TreeRoot = new ArchiveTreeWidgetItem(tree);
+  m_ViewRoot = new ArchiveTreeWidgetItem();
+  m_DataRoot = nullptr;
+
+  m_Tree->addTopLevelItem(m_ViewRoot);
+
+  // Connect the tree slots:
+  connect(m_Tree, &ArchiveTreeWidget::treeCheckStateChanged, this, &InstallDialog::onTreeCheckStateChanged);
+  connect(m_Tree, &ArchiveTreeWidget::itemMoved, this, &InstallDialog::onItemMoved);  
+  connect(m_Tree, &ArchiveTreeWidget::itemChanged, this, &InstallDialog::onItemChanged);
+
+  // Retrieve the label to display problems:
   m_ProblemLabel = findChild<QLabel*>("problemLabel");
 
-  connect(m_Tree, SIGNAL(changed()), this, SLOT(treeChanged()));
+  ui->nameCombo->completer()->setCaseSensitivity(Qt::CaseSensitive);
 
-  updatePreview();
-  ui->nameCombo->setAutoCompletionCaseSensitivity(Qt::CaseSensitive);
+  setDataRoot(m_TreeRoot);
 }
 
 InstallDialog::~InstallDialog()
@@ -66,117 +78,60 @@ QString InstallDialog::getModName() const
   return ui->nameCombo->currentText();
 }
 
-
-void InstallDialog::mapDataNode(DirectoryTree::Node *node, QTreeWidgetItem *baseItem) const
-{
-  for (int i = 0; i < baseItem->childCount(); ++i) {
-    QTreeWidgetItem *currentItem = baseItem->child(i);
-
-    if (currentItem->checkState(0) != Qt::Unchecked) {
-      if (currentItem->data(0, Qt::UserRole).isNull()) {
-        DirectoryTree::Node *newNode = new DirectoryTree::Node;
-        newNode->setData(currentItem->text(0));
-        mapDataNode(newNode, currentItem);
-        node->addNode(newNode, true);
-      } else {
-        node->addLeaf(FileTreeInformation(currentItem->text(0),
-                                          static_cast<size_t>(currentItem->data(0, Qt::UserRole).toInt())));
-      }
-    }
-  }
-}
-
-
-DirectoryTree *InstallDialog::getModifiedTree() const
-{
-  DirectoryTree *base = new DirectoryTree;
-
-  mapDataNode(base, m_Tree->topLevelItem(0));
-  return base;
-}
-
-
-
-void InstallDialog::addDataToTree(DirectoryTree::Node *node, QTreeWidgetItem *treeItem)
-{
-  // add directory elements
-  for (DirectoryTree::node_iterator iter = node->nodesBegin(); iter != node->nodesEnd(); ++iter) {
-    QStringList fields((*iter)->getData().name.toQString());
-    QTreeWidgetItem *newNodeItem = new QTreeWidgetItem(treeItem, fields);
-    newNodeItem->setFlags(newNodeItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsTristate);
-    newNodeItem->setCheckState(0, Qt::Checked);
-    addDataToTree(*iter, newNodeItem);
-    treeItem->addChild(newNodeItem);
-  }
-
-  // add file elements
-  QString path = node->getFullPath();
-  for (DirectoryTree::const_leaf_iterator iter = node->leafsBegin(); iter != node->leafsEnd(); ++iter) {
-    QString field(iter->getName().toQString());
-    QStringList fields(field);
-
-    QTreeWidgetItem *newLeafItem = new QTreeWidgetItem(treeItem, fields);
-    newLeafItem->setFlags(newLeafItem->flags() | Qt::ItemIsUserCheckable);
-    newLeafItem->setCheckState(0, Qt::Checked);
-    if (path.size() != 0) {
-      newLeafItem->setToolTip(0, path + "\\" + field);
-    } else {
-      newLeafItem->setToolTip(0, field);
-    }
-    newLeafItem->setData(0, Qt::UserRole, iter->getIndex());
-
-    treeItem->addChild(newLeafItem);
-  }
-}
-
-
-void InstallDialog::updatePreview()
-{
-  m_Updating = true;
-  m_Tree->clear();
-  delete m_TreeRoot;
-
-  m_TreeRoot = new QTreeWidgetItem(m_Tree, QStringList("<data>"));
-
-  addDataToTree(m_DataTree, m_TreeRoot);
-
-  setDataRoot(m_TreeRoot);
-  m_Updating = false;
-  updateProblems();
+/**
+ * @brief Retrieve the user-modified directory structure.
+ *
+ * @return the new tree represented by this dialog, which can be a new
+ *     tree or a subtree of the original tree.
+ **/
+std::shared_ptr<MOBase::IFileTree> InstallDialog::getModifiedTree() const {
+  return m_DataRoot->entry()->astree();
 }
 
 
 bool InstallDialog::testForProblem()
 {
-  bool ok = false;
-  QTreeWidgetItem *tlWidget = m_Tree->topLevelItem(0);
-  for (int i = 0; i < tlWidget->childCount(); ++i) {
-    QTreeWidgetItem *widget = tlWidget->child(i);
-    if (widget->checkState(0) == Qt::Unchecked) {
-      continue;
-    }
+  static std::set<QString, FileNameComparator> tlDirectoryNames = {
+    "fonts", "interface", "menus", "meshes", "music", "scripts", "shaders",
+    "sound", "strings", "textures", "trees", "video", "facegen", "materials",
+    "skse", "obse", "mwse", "nvse", "fose", "f4se", "distantlod", "asi",
+    "SkyProc Patchers", "Tools", "MCM", "icons", "bookart", "distantland",
+    "mits", "splash", "dllplugins", "CalienteTools", "NetScriptFramework",
+    "shadersfx"
+  };
 
-    if (widget->data(0, Qt::UserRole).isValid()) {
-      // file
-      if (InstallationTester::isTopLevelSuffix(widget->text(0))) {
-        ok = true;
-        break;
-      }
-    } else {
-      // directory
-      if (InstallationTester::isTopLevelDirectory(widget->text(0))) {
-        ok = true;
-        break;
-      }
+  static std::set<QString, FileNameComparator> tlSuffixes = {
+    "esp", "esm", "esl", "bsa", "ba2", ".modgroups" };
+
+  // We check the modified tree:
+  for (auto entry : *m_DataRoot->entry()->astree()) {
+    if (entry->isDir() && tlDirectoryNames.count(entry->name()) > 0) {
+      return true;
+    }
+    else if (entry->isFile() && tlSuffixes.count(entry->suffix()) > 0) {
+      return true;
     }
   }
-  return ok;
+
+  return false;
 }
 
 
+void dumpTree(IFileTree const* tree, QString indent = "") {
+  log::debug("{}{}/", indent, tree->name());
+  indent += "    ";
+  for (auto entry : *tree) {
+    if (entry->isDir()) {
+      dumpTree(entry->astree().get(), indent);
+    }
+    else {
+      log::debug("{}{}", indent, entry->name());
+    }
+  }
+}
+
 void InstallDialog::updateProblems()
 {
-
   if (testForProblem()) {
     m_ProblemLabel->setText(tr("Looks good"));
     m_ProblemLabel->setToolTip(tr("No problem detected"));
@@ -190,94 +145,230 @@ void InstallDialog::updateProblems()
 }
 
 
-void InstallDialog::setDataRoot(QTreeWidgetItem* root)
+void InstallDialog::setDataRoot(ArchiveTreeWidgetItem* const root)
 {
-  if (root != nullptr) {
+  if (root != m_DataRoot) {
+    if (m_DataRoot != nullptr) {
+      m_DataRoot->addChildren(m_ViewRoot->takeChildren());
+    }
+
+    // Force populate:
+    root->populate();
+
     m_DataRoot = root;
-
-    m_Tree->takeTopLevelItem(0);
-    QTreeWidgetItem *temp = root->clone();
-//    temp->setCheckState(0, Qt::Checked);
-    temp->setFlags(temp->flags() & ~(Qt::ItemIsUserCheckable | Qt::ItemIsTristate));
-    temp->setText(0, "<data>");
-    temp->setData(0, Qt::CheckStateRole, QVariant());
-    m_Tree->addTopLevelItem(temp);
-    temp->setExpanded(true);
-  } else {
-    m_Tree->takeTopLevelItem(0);
+    m_ViewRoot->setEntry(m_DataRoot->entry());
+    m_ViewRoot->addChildren(m_DataRoot->takeChildren());
+    m_ViewRoot->setExpanded(true);
   }
   updateProblems();
 }
 
-
-void InstallDialog::use_as_data()
+void InstallDialog::useAsData(ArchiveTreeWidgetItem* item)
 {
-  if (m_TreeSelection != nullptr) {
-    setDataRoot(m_TreeSelection);
-    m_TreeSelection = nullptr;
-  }
+  setDataRoot(item);
   updateProblems();
 }
 
 
-void InstallDialog::unset_data()
+void InstallDialog::unsetData()
 {
-  m_TreeSelection = nullptr;
-
   setDataRoot(m_TreeRoot);
   updateProblems();
 }
 
 
-void InstallDialog::create_directory()
+void InstallDialog::createDirectoryUnder(ArchiveTreeWidgetItem* item)
 {
+  // Should never happen if we customize the context menu depending
+  // on the item:
+  if (!item->entry()->isDir()) {
+    reportError(tr("Cannot create directory under a file."));
+    return;
+  }
+
+  // Retrieve the directory:
+  auto fileTree = item->entry()->astree();
+
   bool ok = false;
   QString result = QInputDialog::getText(this, tr("Enter a directory name"), tr("Name"),
-                                         QLineEdit::Normal, QString(), &ok);
+    QLineEdit::Normal, QString(), &ok);
+  result = result.trimmed();
+
   if (ok && !result.isEmpty()) {
-    for (int i = 0; i < m_TreeSelection->childCount(); ++i) {
-      if (m_TreeSelection->child(i)->text(0) == result) {
-        reportError(tr("A directory with that name exists"));
-        return;
-      }
+
+    // If a file with this name already exists:
+    if (fileTree->exists(result)) {
+      reportError(tr("A directory or file with that name already exists."));
+      return;
     }
-    QStringList fields(result);
-    QTreeWidgetItem *newItem = new QTreeWidgetItem(m_TreeSelection, fields);
-    newItem->setFlags(newItem->flags() | Qt::ItemIsUserCheckable);
+
+    // Need to expand to populate, and it's better for the user anyway:
+    item->setExpanded(true);
+
+    ArchiveTreeWidgetItem* newItem = new ArchiveTreeWidgetItem(
+      item, fileTree->addDirectory(result));
+    item->addChild(newItem);
     newItem->setCheckState(0, Qt::Checked);
-    m_TreeSelection->addChild(newItem);
     updateProblems();
+
+    m_Tree->scrollToItem(newItem);
   }
 }
 
-void InstallDialog::open_file()
-{
-  emit openFile(m_TreeSelection->toolTip(0));
+void detachParents(ArchiveTreeWidgetItem* item) {
+  auto entry = item->entry();
+  auto parent = entry->parent();
+  entry->detach();
+  while (parent != nullptr && parent->empty()) {
+    auto tmp = parent->parent();
+    parent->detach();
+    parent = tmp;
+  }
+
+}
+
+void attachParents(ArchiveTreeWidgetItem* item) {
+  while (item->parent() != nullptr) {
+    auto parent = static_cast<ArchiveTreeWidgetItem*>(item->parent());
+    auto parentEntry = parent->entry();
+    if (parentEntry != nullptr) {
+      parentEntry->astree()->insert(item->entry());
+    }
+    item = parent;
+  }
+}
+
+void InstallDialog::onItemMoved(ArchiveTreeWidgetItem* source, ArchiveTreeWidgetItem* target) {
+  // Just insert the source in the target:
+  auto tree = target->entry()->astree();
+
+  // The REPLACE is probably not necessary since you cannot move item if they already exists.
+  detachParents(source);
+  tree->insert(source->entry(), IFileTree::InsertPolicy::REPLACE);
+
+  attachParents(target);
+
+  // Update the problem:
+  updateProblems();
+}
+
+void recursiveInsert(ArchiveTreeWidgetItem* item) {
+  if (item->isPopulated()) {
+    auto tree = item->entry()->astree();
+    for (int i = 0; i < item->childCount(); ++i) {
+      auto child = static_cast<ArchiveTreeWidgetItem*>(item->child(i));
+      tree->insert(child->entry());
+      if (child->entry()->isDir()) {
+        recursiveInsert(child);
+      }
+    }
+  }
+}
+
+void recursiveDetach(ArchiveTreeWidgetItem* item) {
+  if (item->isPopulated()) {
+    for (int i = 0; i < item->childCount(); ++i) {
+      auto child = static_cast<ArchiveTreeWidgetItem*>(item->child(i));
+      if (child->entry()->isDir()) {
+        recursiveDetach(child);
+      }
+    }
+    item->entry()->astree()->clear();
+  }
+}
+
+void InstallDialog::onTreeCheckStateChanged(ArchiveTreeWidgetItem* item) {
+
+  auto entry = item->entry();
+
+  // If the entry is a directory, we need to either detach or re-attach all the
+  // children. It is not possible to only detach the directory because if the
+  // user uncheck a directory and then check a file under it, the other files would
+  // still be attached.
+  //
+  // The two recursive methods only go down to the expanded (based on childCount() tree, for 
+  // two reasons:
+  //   1. If a tree item has not been expanded, then detaching an entry from its parent will 
+  //      delete it since there would be no remaining shared pointers.
+  //   2. If the tree has not been expanded yet, all the entries under it are still attached,
+  //      so there is no need to process them differently. Detaching a non-expanded item can
+  //      be done by simply detaching the tree, no need to detach all the children.
+  if (entry->isDir()) {
+    if (item->checkState(0) == Qt::Checked && item->childCount() > 0) {
+      recursiveInsert(item);
+    }
+    else if (item->checkState(0) == Qt::Unchecked && item->childCount() > 0) {
+      recursiveDetach(item);
+    }
+  }
+
+  // Unchecked: we detach, and then we go up the parent chain removing all
+  // trees that are now empty:
+  if (item->checkState(0) == Qt::Unchecked) {
+    detachParents(item);
+  }
+  // Otherwize, we need to-reattach the parent:
+  else {
+    attachParents(item);
+  }
+  
+  updateProblems();
+}
+
+void InstallDialog::onItemChanged(QTreeWidgetItem* item, int column) {
+
+  // Retrieve the entry:
+  /*
+  auto entry = static_cast<ArchiveTreeWidgetItem*>(item)->entry();
+
+  // Checked and partially checked are handled the same:
+  if (item->checkState(column) != Qt::Unchecked) {
+    // This should always be the case, but...
+    if (entry->parent() != nullptr) {
+      entry->parent()->astree()->insert(entry);
+    }
+  }
+  else {
+    entry->detach();
+  }
+  */
+
+  // updateProblems();
 }
 
 
 void InstallDialog::on_treeContent_customContextMenuRequested(QPoint pos)
 {
-  m_TreeSelection = m_Tree->itemAt(pos);
-  if (m_TreeSelection == 0) {
+  ArchiveTreeWidgetItem* selectedItem = static_cast<ArchiveTreeWidgetItem*>(m_Tree->itemAt(pos));
+  if (selectedItem == nullptr) {
     return;
   }
 
   QMenu menu;
-  menu.addAction(tr("Set data directory"), this, SLOT(use_as_data()));
-  menu.addAction(tr("Unset data directory"), this, SLOT(unset_data()));
-  if (m_TreeSelection->data(0, Qt::UserRole).isNull()) {
-    menu.addAction(tr("Create directory..."), this, SLOT(create_directory()));
-  } else {
-    menu.addAction(tr("&Open"), this, SLOT(open_file()));
+
+  if (m_ViewRoot->entry() == m_TreeRoot->entry()) {
+    if (selectedItem != m_ViewRoot && selectedItem->entry()->isDir()) {
+      menu.addAction(tr("Set as data directory"), [this, selectedItem]() { useAsData(selectedItem); });
+    }
+  }
+  else {
+    menu.addAction(tr("Unset data directory"), this, &InstallDialog::unsetData);
+  }
+
+  // Add a separator if not empty:
+  if (!menu.isEmpty()) {
+    menu.addSeparator();
+  }
+
+  if (selectedItem->entry()->isDir()) {
+    menu.addAction(tr("Create directory..."), [this, selectedItem]() { createDirectoryUnder(selectedItem); });
+  }
+  else {
+    menu.addAction(tr("&Open"), [this, selectedItem]() {
+      emit openFile(selectedItem->entry().get());
+    });
   }
   menu.exec(m_Tree->mapToGlobal(pos));
-}
-
-
-void InstallDialog::treeChanged()
-{
-  updateProblems();
 }
 
 
