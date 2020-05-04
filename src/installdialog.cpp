@@ -336,12 +336,11 @@ void InstallDialog::on_treeContent_customContextMenuRequested(QPoint pos)
 
   QMenu menu;
 
-  if (m_ViewRoot->entry() == m_TreeRoot->entry()) {
-    if (selectedItem != m_ViewRoot && selectedItem->entry()->isDir()) {
-      menu.addAction(tr("Set as data directory"), [this, selectedItem]() { setDataRoot(selectedItem); });
-    }
+  if (selectedItem != m_ViewRoot && selectedItem->entry()->isDir()) {
+    menu.addAction(tr("Set as data directory"), [this, selectedItem]() { setDataRoot(selectedItem); });
   }
-  else {
+
+  if (m_ViewRoot->entry() != m_TreeRoot->entry()) {
     menu.addAction(tr("Unset data directory"), [this]() { setDataRoot(m_TreeRoot); });
   }
 
