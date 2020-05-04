@@ -91,7 +91,6 @@ InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue
   // Connect the tree slots:
   connect(m_Tree, &ArchiveTreeWidget::treeCheckStateChanged, this, &InstallDialog::onTreeCheckStateChanged);
   connect(m_Tree, &ArchiveTreeWidget::itemMoved, this, &InstallDialog::onItemMoved);  
-  connect(m_Tree, &ArchiveTreeWidget::itemChanged, this, &InstallDialog::onItemChanged);
 
   // Retrieve the label to display problems:
   m_ProblemLabel = findChild<QLabel*>("problemLabel");
