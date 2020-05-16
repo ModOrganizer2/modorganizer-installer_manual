@@ -20,7 +20,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef INSTALLERMANUAL_H
 #define INSTALLERMANUAL_H
 
-
+#include <imoinfo.h>
 #include <iplugininstallersimple.h>
 
 

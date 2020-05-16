@@ -33,7 +33,7 @@ class ArchiveTreeWidget;
 class ArchiveTreeWidgetItem : public QTreeWidgetItem {
 public:
 
-  ArchiveTreeWidgetItem(std::nullptr_t = nullptr);
+  ArchiveTreeWidgetItem(QString dataName);
   ArchiveTreeWidgetItem(std::shared_ptr<MOBase::FileTreeEntry> entry);
   ArchiveTreeWidgetItem(ArchiveTreeWidgetItem* parent, std::shared_ptr<MOBase::FileTreeEntry> entry);
   ArchiveTreeWidgetItem(ArchiveTreeWidget* parent, std::shared_ptr<MOBase::FileTreeEntry> entry);

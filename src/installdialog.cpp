@@ -67,8 +67,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 using namespace MOBase;
 
 
-InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, QWidget *parent)
-  : TutorableDialog("InstallDialog", parent), ui(new Ui::InstallDialog) {
+InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, const ModDataChecker* checker, QWidget *parent)
+  : TutorableDialog("InstallDialog", parent), ui(new Ui::InstallDialog), m_Checker(checker) {
 
   ui->setupUi(this);
 
@@ -83,7 +83,7 @@ InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue
   m_Tree = findChild<ArchiveTreeWidget*>("treeContent");
 
   m_TreeRoot = new ArchiveTreeWidgetItem(tree);
-  m_ViewRoot = new ArchiveTreeWidgetItem();
+  m_ViewRoot = new ArchiveTreeWidgetItem("<" + (checker ? checker->getDataFolderName() : QString("data"))+ ">");
   m_DataRoot = nullptr;
 
   m_Tree->addTopLevelItem(m_ViewRoot);
@@ -124,29 +124,10 @@ std::shared_ptr<MOBase::IFileTree> InstallDialog::getModifiedTree() const {
 
 bool InstallDialog::testForProblem()
 {
-  static std::set<QString, FileNameComparator> tlDirectoryNames = {
-    "fonts", "interface", "menus", "meshes", "music", "scripts", "shaders",
-    "sound", "strings", "textures", "trees", "video", "facegen", "materials",
-    "skse", "obse", "mwse", "nvse", "fose", "f4se", "distantlod", "asi",
-    "SkyProc Patchers", "Tools", "MCM", "icons", "bookart", "distantland",
-    "mits", "splash", "dllplugins", "CalienteTools", "NetScriptFramework",
-    "shadersfx"
-  };
-
-  static std::set<QString, FileNameComparator> tlSuffixes = {
-    "esp", "esm", "esl", "bsa", "ba2", ".modgroups" };
-
-  // We check the modified tree:
-  for (auto entry : *m_DataRoot->entry()->astree()) {
-    if (entry->isDir() && tlDirectoryNames.count(entry->name()) > 0) {
-      return true;
-    }
-    else if (entry->isFile() && tlSuffixes.count(entry->suffix()) > 0) {
-      return true;
-    }
+  if (!m_Checker) {
+    return true;
   }
-
-  return false;
+  return m_Checker->dataLooksValid(m_DataRoot->entry()->astree());
 }
 
 

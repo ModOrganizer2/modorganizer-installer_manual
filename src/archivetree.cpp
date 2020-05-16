@@ -28,8 +28,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * This is the constructor for the top-level item which is a fake item:
  */
-ArchiveTreeWidgetItem::ArchiveTreeWidgetItem(std::nullptr_t)
-  : QTreeWidgetItem(QStringList("<data>")), m_Entry(nullptr) { 
+ArchiveTreeWidgetItem::ArchiveTreeWidgetItem(QString dataName)
+  : QTreeWidgetItem(QStringList(dataName)), m_Entry(nullptr) {
   setFlags(flags() & ~Qt::ItemIsUserCheckable);
   setExpanded(true);
   m_Populated = true;
