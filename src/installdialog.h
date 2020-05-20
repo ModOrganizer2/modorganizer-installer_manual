@@ -20,11 +20,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef INSTALLDIALOG_H
 #define INSTALLDIALOG_H
 
-#include "mytree.h"
 #include "archivetree.h"
 #include "tutorabledialog.h"
 #include <guessedvalue.h>
-#include <directorytree.h>
+#include <ifiletree.h>
 #include <QDialog>
 #include <QUuid>
 #include <QTreeWidgetItem>
@@ -48,14 +47,15 @@ class InstallDialog : public MOBase::TutorableDialog
 
 public:
   /**
-   * @brief constructor
+   * @brief Create a new install dialog for the given tree. The tree
+   * is "own" by the dialog, i.e., any change made by the user is immediately
+   * reflected to the given tree, except for the changes to the root.
    *
-   * @param tree tree structure describing the vanilla archive structure. The InstallDialog
-   *        does NOT take custody of this pointer but it has to remain valid until after the call to getModifiedTree
-   * @param modName name of the mod. The name can be modified through the dialog
-   * @param parent parent widget
+   * @param tree Tree structure describing the original archive structure.
+   * @param modName name of the mod. The name can be modified through the dialog.
+   * @param parent parent widget.
    **/
-  explicit InstallDialog(MOBase::DirectoryTree *tree, const MOBase::GuessedValue<QString> &modName, QWidget *parent = 0);
+  explicit InstallDialog(std::shared_ptr<MOBase::IFileTree> tree, const MOBase::GuessedValue<QString> &modName, QWidget *parent = 0);
   ~InstallDialog();
 
   /**
@@ -66,58 +66,107 @@ public:
   QString getModName() const;
 
   /**
-   * @brief retrieve the user-modified directory structure
+   * @brief Retrieve the user-modified directory structure.
    *
-   * @return modified data structure. This is a NEW datatree object for which the caller takes custody
+   * @return the new tree represented by this dialog, which can be a new
+   *     tree or a subtree of the original tree.
    **/
-  MOBase::DirectoryTree *getModifiedTree() const;
+  std::shared_ptr<MOBase::IFileTree> getModifiedTree() const;
 
 signals:
 
-  void openFile(const QString fileName);
+  /**
+   * @brief Signal emitted when user request the file corresponding
+   *     to the given entry to be opened.
+   *
+   * @param entry Entry corresponding to the file to open.
+   */
+  void openFile(const MOBase::FileTreeEntry *entry);
 
 private:
 
-  void updatePreview();
   bool testForProblem();
   void updateProblems();
 
-  void setDataRoot(QTreeWidgetItem* root);
+  /**
+   * @brief Detach the entry of this item from its parent, and recursively detach
+   *     all of its parent if they become empty.
+   *
+   * @param item The item to detach.
+   */
+  void detachParents(ArchiveTreeWidgetItem* item);
 
-  //void updateFileList(QTreeWidgetItem *item, QString targetName, FileData* const *fileData, size_t size) const;
+  /**
+   * @brief Re-attach the entry of this item to its parent, and recursively attach
+   *    all of its parent if they were empty (and thus detached).
+   *
+   * @param item The item to attach.
+   */
+  void attachParents(ArchiveTreeWidgetItem* item);
 
-  void updateCheckState(QTreeWidgetItem *item);
+  /**
+   * @brief Recursively re-insert all the entries below the given item in their
+   *     corresponding parents. This method does not recurse in items that have not 
+   *     been populated yet.
+   *
+   * @param item The top-level item to start.
+   */
+  void recursiveInsert(ArchiveTreeWidgetItem* item);
 
-  void addDataToTree(MOBase::DirectoryTree::Node *node, QTreeWidgetItem *treeItem);
+  /**
+   * @brief Recursively detach all the entries below the given item from their
+   *     corresponding parents. This method does not recurse in items that have not 
+   *     been populated yet.
+   *
+   * @param item The top-level item to start.
+   */
+  void recursiveDetach(ArchiveTreeWidgetItem* item);
 
-  void mapDataNode(MOBase::DirectoryTree::Node *node, QTreeWidgetItem *baseItem) const;
+  /**
+   * @brief Set the data root widget.
+   */
+  void setDataRoot(ArchiveTreeWidgetItem* const root);
+
+  /**
+   * @brief Create a directory under the given tree item, asking
+   *     the user for a name.
+   *
+   * @param treeItem Parent item of the directory.
+   */
+  void createDirectoryUnder(ArchiveTreeWidgetItem *treeItem);
 
 private slots:
 
+  // The two slots to connect to the tree:
+  void onItemMoved(ArchiveTreeWidgetItem* source, ArchiveTreeWidgetItem* target);
+  void onTreeCheckStateChanged(ArchiveTreeWidgetItem* item);
+
+  // Automatic slots that are directly bound to the UI:
   void on_treeContent_customContextMenuRequested(QPoint pos);
-
-  void unset_data();
-  void use_as_data();
-  void create_directory();
-  void open_file();
-
-  void treeChanged();
-
   void on_cancelButton_clicked();
-
   void on_okButton_clicked();
 
 private:
   Ui::InstallDialog *ui;
 
-  MOBase::DirectoryTree *m_DataTree;
-
-  ArchiveTree *m_Tree;
+  ArchiveTreeWidget *m_Tree;
   QLabel *m_ProblemLabel;
-  QTreeWidgetItem *m_TreeRoot;
-  QTreeWidgetItem *m_DataRoot;
-  QTreeWidgetItem *m_TreeSelection;
-  bool m_Updating;
+
+  // IMPORTANT: If you intend to work on this and understand this, read the detailed
+  // explanation at the beginning of the installdialog.cpp file.
+
+  // The tree root is the initial root that will never change (should be const
+  // but cannot be since the parent tree cannot be consstructed in the member
+  // initializer list):
+  ArchiveTreeWidgetItem *m_TreeRoot;
+
+  // The data root is the real widget of the current data. This widget
+  // is not the real root that is added to the tree.
+  ArchiveTreeWidgetItem *m_DataRoot;
+
+  // This is the actual tree in the widget  (should be const but cannot be since 
+  // the parent tree cannot be consstructed in the member initializer list):
+  ArchiveTreeWidgetItem *m_ViewRoot;
 
 };
 

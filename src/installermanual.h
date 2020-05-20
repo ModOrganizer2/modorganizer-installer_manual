@@ -47,22 +47,23 @@ public:
   virtual unsigned int priority() const;
   virtual bool isManualInstaller() const;
 
-  virtual bool isArchiveSupported(const MOBase::DirectoryTree &tree) const;
-  virtual EInstallResult install(MOBase::GuessedValue<QString> &modName, MOBase::DirectoryTree &tree,
+  virtual bool isArchiveSupported(std::shared_ptr<const MOBase::IFileTree> tree) const;
+  virtual EInstallResult install(MOBase::GuessedValue<QString> &modName, std::shared_ptr<MOBase::IFileTree> &tree,
                                  QString &version, int &modID);
 
 private:
 
-  bool isSimpleArchiveTopLayer(const MOBase::DirectoryTree::Node *node) const;
-  const MOBase::DirectoryTree::Node *getSimpleArchiveBase(const MOBase::DirectoryTree &dataTree) const;
+  bool isSimpleArchiveTopLayer(const std::shared_ptr<const MOBase::IFileTree> tree) const;
+  std::shared_ptr<const MOBase::IFileTree> getSimpleArchiveBase(const std::shared_ptr<const MOBase::IFileTree> tree) const;
 
 private slots:
 
   /**
-   * @brief opens a file from the archive in the (system-)default editor/viewer
-   * @param fileName relative name of the file to open
+   * @brief Opens a file from the archive in the (system-)default editor/viewer.
+   *
+   * @param entry Entry corresponding to the file to open.
    */
-  void openFile(const QString &fileName);
+  void openFile(const MOBase::FileTreeEntry* entry);
 
 private:
 

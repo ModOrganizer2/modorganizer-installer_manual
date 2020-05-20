@@ -64,7 +64,7 @@
        </widget>
       </item>
       <item>
-       <widget class="ArchiveTree" name="treeContent">
+       <widget class="ArchiveTreeWidget" name="treeContent">
         <property name="contextMenuPolicy">
          <enum>Qt::CustomContextMenu</enum>
         </property>
@@ -152,7 +152,7 @@ p, li { white-space: pre-wrap; }
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ArchiveTree</class>
+   <class>ArchiveTreeWidget</class>
    <extends>QTreeWidget</extends>
    <header>archivetree.h</header>
   </customwidget>
