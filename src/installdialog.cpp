@@ -134,14 +134,21 @@ bool InstallDialog::testForProblem()
 
 void InstallDialog::updateProblems()
 {
-  if (testForProblem()) {
-    m_ProblemLabel->setText(tr("Looks good"));
-    m_ProblemLabel->setToolTip(tr("No problem detected"));
+  if (!m_Checker) {
+    m_Tree->setStyleSheet("QTreeWidget { border: none; }");
+    m_ProblemLabel->setText(tr("Cannot check the content of <%1>.").arg(m_DataFolderName));
+    m_ProblemLabel->setToolTip(tr("The plugin for the current game does not provide a way to check the content of <%1>.").arg(m_DataFolderName));
+    m_ProblemLabel->setStyleSheet("color: darkYellow;");
+  }
+  else if (testForProblem()) {
+    m_Tree->setStyleSheet("QTreeWidget { border: 1px solid darkGreen; border-radius: 2px; }");
+    m_ProblemLabel->setText(tr("The content of <%1> looks valid.").arg(m_DataFolderName));
+    m_ProblemLabel->setToolTip(tr("The content of <%1> seems valid for the current game.").arg(m_DataFolderName));
     m_ProblemLabel->setStyleSheet("color: darkGreen;");
   } else {
-    m_ProblemLabel->setText(tr("No game data on top level"));
-    m_ProblemLabel->setToolTip(tr("There is no esp/esm file or asset directory (textures, meshes, interface, ...) "
-                                  "on the top level."));
+    m_Tree->setStyleSheet("QTreeWidget { border: 1px solid red; border-radius: 2px; }");
+    m_ProblemLabel->setText(tr("The content of <%1> does not look valid.").arg(m_DataFolderName));
+    m_ProblemLabel->setToolTip(tr("The content of <%1> is probably not valid for the current game.").arg(m_DataFolderName));
     m_ProblemLabel->setStyleSheet("color: red;");
   }
 }

@@ -109,7 +109,7 @@ p, li { white-space: pre-wrap; }
       <widget class="QLabel" name="problemLabel">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <pointsize>8</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
