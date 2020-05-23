@@ -116,7 +116,7 @@ IPluginInstaller::EInstallResult InstallerManual::install(
   GuessedValue<QString> &modName, std::shared_ptr<MOBase::IFileTree> &tree, QString&, int&)
 {
   qDebug("offering installation dialog");
-  InstallDialog dialog(tree, modName, m_MOInfo->managedGame()->feature<ModDataChecker>(), parentWidget());
+  InstallDialog dialog(tree, modName, m_MOInfo->managedGame(), parentWidget());
   connect(&dialog, &InstallDialog::openFile, this, &InstallerManual::openFile);
   if (dialog.exec() == QDialog::Accepted) {
     modName.update(dialog.getModName(), GUESS_USER);

@@ -67,8 +67,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 using namespace MOBase;
 
 
-InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, const ModDataChecker* checker, QWidget *parent)
-  : TutorableDialog("InstallDialog", parent), ui(new Ui::InstallDialog), m_Checker(checker) {
+InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, const IPluginGame *gamePlugin, QWidget *parent)
+  : TutorableDialog("InstallDialog", parent), ui(new Ui::InstallDialog), 
+  m_Checker(gamePlugin->feature<ModDataChecker>()), m_DataFolderName(gamePlugin->dataDirectory().dirName().toLower()) {
 
   ui->setupUi(this);
 
@@ -83,7 +84,7 @@ InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue
   m_Tree = findChild<ArchiveTreeWidget*>("treeContent");
 
   m_TreeRoot = new ArchiveTreeWidgetItem(tree);
-  m_ViewRoot = new ArchiveTreeWidgetItem("<" + (checker ? checker->getDataFolderName() : QString("data"))+ ">");
+  m_ViewRoot = new ArchiveTreeWidgetItem("<" + m_DataFolderName + ">");
   m_DataRoot = nullptr;
 
   m_Tree->addTopLevelItem(m_ViewRoot);
@@ -318,11 +319,11 @@ void InstallDialog::on_treeContent_customContextMenuRequested(QPoint pos)
   QMenu menu;
 
   if (selectedItem != m_ViewRoot && selectedItem->entry()->isDir()) {
-    menu.addAction(tr("Set as data directory"), [this, selectedItem]() { setDataRoot(selectedItem); });
+    menu.addAction(tr("Set as <%1> directory").arg(m_DataFolderName), [this, selectedItem]() { setDataRoot(selectedItem); });
   }
 
   if (m_ViewRoot->entry() != m_TreeRoot->entry()) {
-    menu.addAction(tr("Unset data directory"), [this]() { setDataRoot(m_TreeRoot); });
+    menu.addAction(tr("Unset <%1> directory").arg(m_DataFolderName), [this]() { setDataRoot(m_TreeRoot); });
   }
 
   // Add a separator if not empty:
