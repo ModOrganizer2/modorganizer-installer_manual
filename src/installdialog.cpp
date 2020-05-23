@@ -67,8 +67,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 using namespace MOBase;
 
 
-InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, QWidget *parent)
-  : TutorableDialog("InstallDialog", parent), ui(new Ui::InstallDialog) {
+InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, const IPluginGame *gamePlugin, QWidget *parent)
+  : TutorableDialog("InstallDialog", parent), ui(new Ui::InstallDialog), 
+  m_Checker(gamePlugin->feature<ModDataChecker>()), m_DataFolderName(gamePlugin->dataDirectory().dirName().toLower()) {
 
   ui->setupUi(this);
 
@@ -83,7 +84,7 @@ InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue
   m_Tree = findChild<ArchiveTreeWidget*>("treeContent");
 
   m_TreeRoot = new ArchiveTreeWidgetItem(tree);
-  m_ViewRoot = new ArchiveTreeWidgetItem();
+  m_ViewRoot = new ArchiveTreeWidgetItem("<" + m_DataFolderName + ">");
   m_DataRoot = nullptr;
 
   m_Tree->addTopLevelItem(m_ViewRoot);
@@ -124,42 +125,30 @@ std::shared_ptr<MOBase::IFileTree> InstallDialog::getModifiedTree() const {
 
 bool InstallDialog::testForProblem()
 {
-  static std::set<QString, FileNameComparator> tlDirectoryNames = {
-    "fonts", "interface", "menus", "meshes", "music", "scripts", "shaders",
-    "sound", "strings", "textures", "trees", "video", "facegen", "materials",
-    "skse", "obse", "mwse", "nvse", "fose", "f4se", "distantlod", "asi",
-    "SkyProc Patchers", "Tools", "MCM", "icons", "bookart", "distantland",
-    "mits", "splash", "dllplugins", "CalienteTools", "NetScriptFramework",
-    "shadersfx"
-  };
-
-  static std::set<QString, FileNameComparator> tlSuffixes = {
-    "esp", "esm", "esl", "bsa", "ba2", ".modgroups" };
-
-  // We check the modified tree:
-  for (auto entry : *m_DataRoot->entry()->astree()) {
-    if (entry->isDir() && tlDirectoryNames.count(entry->name()) > 0) {
-      return true;
-    }
-    else if (entry->isFile() && tlSuffixes.count(entry->suffix()) > 0) {
-      return true;
-    }
+  if (!m_Checker) {
+    return true;
   }
-
-  return false;
+  return m_Checker->dataLooksValid(m_DataRoot->entry()->astree());
 }
 
 
 void InstallDialog::updateProblems()
 {
-  if (testForProblem()) {
-    m_ProblemLabel->setText(tr("Looks good"));
-    m_ProblemLabel->setToolTip(tr("No problem detected"));
+  if (!m_Checker) {
+    m_Tree->setStyleSheet("QTreeWidget { border: none; }");
+    m_ProblemLabel->setText(tr("Cannot check the content of <%1>.").arg(m_DataFolderName));
+    m_ProblemLabel->setToolTip(tr("The plugin for the current game does not provide a way to check the content of <%1>.").arg(m_DataFolderName));
+    m_ProblemLabel->setStyleSheet("color: darkYellow;");
+  }
+  else if (testForProblem()) {
+    m_Tree->setStyleSheet("QTreeWidget { border: 1px solid darkGreen; border-radius: 2px; }");
+    m_ProblemLabel->setText(tr("The content of <%1> looks valid.").arg(m_DataFolderName));
+    m_ProblemLabel->setToolTip(tr("The content of <%1> seems valid for the current game.").arg(m_DataFolderName));
     m_ProblemLabel->setStyleSheet("color: darkGreen;");
   } else {
-    m_ProblemLabel->setText(tr("No game data on top level"));
-    m_ProblemLabel->setToolTip(tr("There is no esp/esm file or asset directory (textures, meshes, interface, ...) "
-                                  "on the top level."));
+    m_Tree->setStyleSheet("QTreeWidget { border: 1px solid red; border-radius: 2px; }");
+    m_ProblemLabel->setText(tr("The content of <%1> does not look valid.").arg(m_DataFolderName));
+    m_ProblemLabel->setToolTip(tr("The content of <%1> is probably not valid for the current game.").arg(m_DataFolderName));
     m_ProblemLabel->setStyleSheet("color: red;");
   }
 }
@@ -337,11 +326,11 @@ void InstallDialog::on_treeContent_customContextMenuRequested(QPoint pos)
   QMenu menu;
 
   if (selectedItem != m_ViewRoot && selectedItem->entry()->isDir()) {
-    menu.addAction(tr("Set as data directory"), [this, selectedItem]() { setDataRoot(selectedItem); });
+    menu.addAction(tr("Set as <%1> directory").arg(m_DataFolderName), [this, selectedItem]() { setDataRoot(selectedItem); });
   }
 
   if (m_ViewRoot->entry() != m_TreeRoot->entry()) {
-    menu.addAction(tr("Unset data directory"), [this]() { setDataRoot(m_TreeRoot); });
+    menu.addAction(tr("Unset <%1> directory").arg(m_DataFolderName), [this]() { setDataRoot(m_TreeRoot); });
   }
 
   // Add a separator if not empty:

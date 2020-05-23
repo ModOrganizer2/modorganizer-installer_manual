@@ -24,6 +24,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "tutorabledialog.h"
 #include <guessedvalue.h>
 #include <ifiletree.h>
+
+#include <iplugingame.h>
+#include <moddatachecker.h>
+
 #include <QDialog>
 #include <QUuid>
 #include <QTreeWidgetItem>
@@ -52,10 +56,11 @@ public:
    * reflected to the given tree, except for the changes to the root.
    *
    * @param tree Tree structure describing the original archive structure.
-   * @param modName name of the mod. The name can be modified through the dialog.
-   * @param parent parent widget.
+   * @param modName Name of the mod. The name can be modified through the dialog.
+   * @param gamePlugin The current game plugin.
+   * @param parent Parent widget.
    **/
-  explicit InstallDialog(std::shared_ptr<MOBase::IFileTree> tree, const MOBase::GuessedValue<QString> &modName, QWidget *parent = 0);
+  explicit InstallDialog(std::shared_ptr<MOBase::IFileTree> tree, const MOBase::GuessedValue<QString> &modName, const MOBase::IPluginGame* gamePlugin, QWidget *parent = 0);
   ~InstallDialog();
 
   /**
@@ -148,6 +153,11 @@ private slots:
 
 private:
   Ui::InstallDialog *ui;
+
+  const ModDataChecker* m_Checker;
+
+  // Name of the "data" directory:
+  QString m_DataFolderName;
 
   ArchiveTreeWidget *m_Tree;
   QLabel *m_ProblemLabel;

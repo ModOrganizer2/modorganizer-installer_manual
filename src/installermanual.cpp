@@ -22,11 +22,14 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <utility.h>
 #include <iinstallationmanager.h>
+#include <iplugingame.h>
 
 #include <QtPlugin>
 #include <QDialog>
 
 #include <Shellapi.h>
+
+#include "moddatachecker.h"
 
 
 using namespace MOBase;
@@ -50,7 +53,7 @@ QString InstallerManual::name() const
 
 QString InstallerManual::author() const
 {
-  return "Tannin";
+  return "Tannin, Holt59";
 }
 
 QString InstallerManual::description() const
@@ -113,7 +116,7 @@ IPluginInstaller::EInstallResult InstallerManual::install(
   GuessedValue<QString> &modName, std::shared_ptr<MOBase::IFileTree> &tree, QString&, int&)
 {
   qDebug("offering installation dialog");
-  InstallDialog dialog(tree, modName, parentWidget());
+  InstallDialog dialog(tree, modName, m_MOInfo->managedGame(), parentWidget());
   connect(&dialog, &InstallDialog::openFile, this, &InstallerManual::openFile);
   if (dialog.exec() == QDialog::Accepted) {
     modName.update(dialog.getModName(), GUESS_USER);
