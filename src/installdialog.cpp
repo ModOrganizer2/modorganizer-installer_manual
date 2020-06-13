@@ -128,7 +128,7 @@ bool InstallDialog::testForProblem()
   if (!m_Checker) {
     return true;
   }
-  return m_Checker->dataLooksValid(m_DataRoot->entry()->astree());
+  return m_Checker->dataLooksValid(m_DataRoot->entry()->astree()) == ModDataChecker::CheckReturn::VALID;
 }
 
 
