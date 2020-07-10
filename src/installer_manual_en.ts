@@ -9,13 +9,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.ui" line="32"/>
-        <source>New Mod</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="installdialog.ui" line="46"/>
-        <location filename="installdialog.cpp" line="235"/>
+        <location filename="installdialog.cpp" line="239"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -54,62 +49,77 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="181"/>
-        <source>Looks good</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="installdialog.cpp" line="182"/>
-        <source>No problem detected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="installdialog.cpp" line="185"/>
-        <source>No game data on top level</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="installdialog.cpp" line="186"/>
-        <source>There is no esp/esm file or asset directory (textures, meshes, interface, ...) on the top level.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="installdialog.cpp" line="235"/>
+        <location filename="installdialog.cpp" line="239"/>
         <source>Enter a directory name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="240"/>
-        <source>A directory with that name exists</source>
+        <location filename="installdialog.cpp" line="139"/>
+        <source>Cannot check the content of &lt;%1&gt;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="267"/>
-        <source>Set data directory</source>
+        <location filename="installdialog.cpp" line="140"/>
+        <source>The plugin for the current game does not provide a way to check the content of &lt;%1&gt;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="268"/>
-        <source>Unset data directory</source>
+        <location filename="installdialog.cpp" line="145"/>
+        <source>The content of &lt;%1&gt; looks valid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="270"/>
+        <location filename="installdialog.cpp" line="146"/>
+        <source>The content of &lt;%1&gt; seems valid for the current game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="installdialog.cpp" line="150"/>
+        <source>The content of &lt;%1&gt; does not look valid.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="installdialog.cpp" line="151"/>
+        <source>The content of &lt;%1&gt; is probably not valid for the current game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="installdialog.cpp" line="231"/>
+        <source>Cannot create directory under a file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="installdialog.cpp" line="247"/>
+        <source>A directory or file with that name already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="installdialog.cpp" line="329"/>
+        <source>Set as &lt;%1&gt; directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="installdialog.cpp" line="333"/>
+        <source>Unset &lt;%1&gt; directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="installdialog.cpp" line="342"/>
         <source>Create directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="272"/>
+        <location filename="installdialog.cpp" line="345"/>
         <source>&amp;Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="287"/>
+        <location filename="installdialog.cpp" line="356"/>
         <source>Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="288"/>
+        <location filename="installdialog.cpp" line="357"/>
         <source>This mod was probably NOT set up correctly, most likely it will NOT work. You should first correct the directory layout using the content-tree.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -117,7 +127,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>InstallerManual</name>
     <message>
-        <location filename="installermanual.cpp" line="58"/>
+        <location filename="installermanual.cpp" line="61"/>
         <source>Fallback installer for mods that can be extracted but can&apos;t be handled by another installer</source>
         <translation type="unfinished"></translation>
     </message>
