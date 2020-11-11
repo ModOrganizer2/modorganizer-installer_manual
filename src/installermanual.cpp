@@ -51,6 +51,11 @@ QString InstallerManual::name() const
   return "Manual Installer";
 }
 
+QString InstallerManual::localizedName() const
+{
+  return tr("Manual Installer");
+}
+
 QString InstallerManual::author() const
 {
   return "Tannin, Holt59";
@@ -64,11 +69,6 @@ QString InstallerManual::description() const
 VersionInfo InstallerManual::version() const
 {
   return VersionInfo(1, 0, 1, VersionInfo::RELEASE_FINAL);
-}
-
-bool InstallerManual::isActive() const
-{
-  return true;
 }
 
 QList<PluginSetting> InstallerManual::settings() const
