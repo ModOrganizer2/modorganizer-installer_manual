@@ -271,7 +271,7 @@ void InstallDialog::onItemMoved(ArchiveTreeWidgetItem* source, ArchiveTreeWidget
   // check if an entry exists with the same name, we check
   // in the tree widget to find unchecked items
   for (int i = 0; i < target->childCount(); ++i) {
-    auto* child = static_cast<ArchiveTreeWidgetItem*>(target->child(i));
+    auto* child = target->child(i);
     if (child->entry()->compare(source->entry()->name()) == 0) {
       // remove existing file and force check existing directory
       if (child->entry()->isFile()) {

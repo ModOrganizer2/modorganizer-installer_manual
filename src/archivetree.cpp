@@ -101,7 +101,7 @@ void ArchiveTreeWidgetItem::populate(bool force) {
 
   // If the item is unchecked, we need to clear it because it has not been cleared
   // before:
-  if (checkState(0) == Qt::Unchecked) {
+  if (flags().testFlag(Qt::ItemIsUserCheckable) && checkState(0) == Qt::Unchecked) {
     entry()->astree()->clear();
   }
 
