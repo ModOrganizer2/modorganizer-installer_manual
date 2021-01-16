@@ -34,8 +34,6 @@ public:
 
   ArchiveTreeWidgetItem(QString dataName);
   ArchiveTreeWidgetItem(std::shared_ptr<MOBase::FileTreeEntry> entry);
-  ArchiveTreeWidgetItem(ArchiveTreeWidgetItem* parent, std::shared_ptr<MOBase::FileTreeEntry> entry);
-  ArchiveTreeWidgetItem(ArchiveTreeWidget* parent, std::shared_ptr<MOBase::FileTreeEntry> entry);
 
 public:
 
@@ -91,35 +89,74 @@ class ArchiveTreeWidget : public QTreeWidget
 public:
 
   explicit ArchiveTreeWidget(QWidget* parent = 0);
+  void setup(QString dataFolderName);
+
+public:
+
+  // set the data root widget
+  //
+  void setDataRoot(ArchiveTreeWidgetItem* const root);
+
+  // create a directory under the given tree item, without
+  // performing any check
+  //
+  ArchiveTreeWidgetItem* addDirectory(ArchiveTreeWidgetItem* treeItem, QString name);
+
+  // return the root of the tree (the item corresponding to <data>)
+  //
+  ArchiveTreeWidgetItem* root() const { return m_ViewRoot; }
 
 signals:
 
-  // emitted after a tree widget item is moved from one parent to another
+  // emitted when the tree has been modified
   //
-  void itemMoved(ArchiveTreeWidgetItem* source, ArchiveTreeWidgetItem* target);
-
-  // emitted when a tree widget item is checked or unchecked
-  //
-  // unlike itemChanged() or dataChanged(), this signal is only emitted
-  // for the item that was changed, not its parent or child
-  //
-  // this signal is emitted after the tree has been updated, and after all the
-  // itemChanged() or dataChanged() signals
-  //
-  void treeCheckStateChanged(ArchiveTreeWidgetItem* item);
+  void treeChanged();
 
 public slots:
 
 protected:
+
+  // detach the entry of this item from its parent, and recursively detach
+  // all of its parent if they become
+  //
+  void detachParents(ArchiveTreeWidgetItem* item);
+
+  // re-attach the entry of this item to its parent, and recursively attach
+  // all of its parent if they were empty (and thus detached)
+  //
+  void attachParents(ArchiveTreeWidgetItem* item);
+
+  // recursively re-insert all the entries below the given item in their
+  // corresponding parents
+  //
+  // this method does not recurse in items that have not been populated yet
+  //
+  void recursiveInsert(ArchiveTreeWidgetItem* item);
+
+  // recursively detach all the entries below the given item from their
+  // corresponding parents
+  //
+  // this method does not recurse in items that have not been populated yet
+  //
+  void recursiveDetach(ArchiveTreeWidgetItem* item);
 
   // slot that trigger the given item to be populated if it has not already
   // been
   //
   void populateItem(QTreeWidgetItem* item);
 
-  virtual void dragEnterEvent(QDragEnterEvent *event) override;
-  virtual void dragMoveEvent(QDragMoveEvent *event) override;
-  virtual void dropEvent(QDropEvent *event) override;
+  // move the source under the target
+  //
+  void moveItem(ArchiveTreeWidgetItem* source, ArchiveTreeWidgetItem* target);
+
+  // called when the state of the item changed - unlike the standard QTreeWidget,
+  // this is only called for the actual item, not its parent/children
+  //
+  void onTreeCheckStateChanged(ArchiveTreeWidgetItem* item);
+
+  void dragEnterEvent(QDragEnterEvent *event) override;
+  void dragMoveEvent(QDragMoveEvent *event) override;
+  void dropEvent(QDropEvent *event) override;
 
 private:
 
@@ -129,12 +166,19 @@ private:
   //
   void refreshItem(ArchiveTreeWidgetItem* item);
 
-  // emit the itemCheckStateChanged event
-  //
-  void emitTreeCheckStateChanged(ArchiveTreeWidgetItem* item);
-
   // the widget item that emitted the dataChanged event
   ArchiveTreeWidgetItem* m_Emitter = nullptr;
+
+  // IMPORTANT: if you intend to work on this and understand this, read the detailed
+  // explanation at the beginning of the archivetree.cpp file
+  //
+  // - the data root is the real widget of the current data, this widget
+  //   is not the real root that is added to the tree
+  // - the view root is the actual tree in the widget (should be const but cannot be since
+  //   the parent tree cannot be consstructed in the member initializer list)
+  //
+  ArchiveTreeWidgetItem* m_DataRoot;
+  ArchiveTreeWidgetItem* m_ViewRoot;
 
   friend class ArchiveTreeWidgetItem;
 
