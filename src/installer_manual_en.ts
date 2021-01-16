@@ -2,6 +2,30 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US">
 <context>
+    <name>ArchiveTreeWidget</name>
+    <message>
+        <location filename="archivetree.cpp" line="240"/>
+        <location filename="archivetree.cpp" line="250"/>
+        <source>Cannot drop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="archivetree.cpp" line="241"/>
+        <source>Cannot drop &apos;%1&apos; into one of its subfolder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="archivetree.cpp" line="252"/>
+        <source>A file &apos;%1&apos; already exists in folder &apos;%2&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="archivetree.cpp" line="253"/>
+        <source>A folder &apos;%1&apos; already exists in folder &apos;%2&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>InstallDialog</name>
     <message>
         <location filename="installdialog.ui" line="20"/>
@@ -94,32 +118,32 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="329"/>
+        <location filename="installdialog.cpp" line="343"/>
         <source>Set as &lt;%1&gt; directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="333"/>
+        <location filename="installdialog.cpp" line="347"/>
         <source>Unset &lt;%1&gt; directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="342"/>
+        <location filename="installdialog.cpp" line="356"/>
         <source>Create directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="345"/>
+        <location filename="installdialog.cpp" line="359"/>
         <source>&amp;Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="356"/>
+        <location filename="installdialog.cpp" line="370"/>
         <source>Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="357"/>
+        <location filename="installdialog.cpp" line="371"/>
         <source>This mod was probably NOT set up correctly, most likely it will NOT work. You should first correct the directory layout using the content-tree.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -127,7 +151,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>InstallerManual</name>
     <message>
-        <location filename="installermanual.cpp" line="61"/>
+        <location filename="installermanual.cpp" line="56"/>
+        <source>Manual Installer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="installermanual.cpp" line="66"/>
         <source>Fallback installer for mods that can be extracted but can&apos;t be handled by another installer</source>
         <translation type="unfinished"></translation>
     </message>

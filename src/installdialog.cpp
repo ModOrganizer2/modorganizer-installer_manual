@@ -31,18 +31,18 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMessageBox>
 
 // Implementation details for the ArchiveTree widget:
-// 
+//
 // The ArchiveTreeWidget presents to the user the underlying IFileTree, but in order
 // to increase performance, the tree is populated dynamically when required. Populating
-// the tree is currently required: 
+// the tree is currently required:
 //   1) when a branch of the tree widget is expanded,
-//   2) when an item is moved to a tree, 
+//   2) when an item is moved to a tree,
 //   3) when a directory is created,
 //   4) when a directory is "set as data root".
 //
-// Case 1 is handled automatically in the setExpanded method of ArchiveTreeWidget. Cases 2 
-// and 3 could be dealt with differently, but populating the tree before inserting an item 
-// makes everything else easier (not that populating the widget is different from populating 
+// Case 1 is handled automatically in the setExpanded method of ArchiveTreeWidget. Cases 2
+// and 3 could be dealt with differently, but populating the tree before inserting an item
+// makes everything else easier (not that populating the widget is different from populating
 // the IFileTree which is done automatically). Case 4 is handled manually in setDataRoot.
 //
 // Another specificity of the implementation is the treeCheckStateChanged() signal emitted
@@ -54,7 +54,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 //   1) When an item is unchecked:
 //      - We detach the corresponding entry from its parent, and recursively detach the empty
 //        parents (or the ones that become empty).
-//      - If the entry is a directory and the item has been populated, we recursively detach 
+//      - If the entry is a directory and the item has been populated, we recursively detach
 //        all the child entries for all the child items that have been populated (no need to
 //        do it for non-populated items)>
 //   2) When an item is checked, we do the same process but we re-attach parents and re-insert
@@ -68,7 +68,7 @@ using namespace MOBase;
 
 
 InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, const IPluginGame *gamePlugin, QWidget *parent)
-  : TutorableDialog("InstallDialog", parent), ui(new Ui::InstallDialog), 
+  : TutorableDialog("InstallDialog", parent), ui(new Ui::InstallDialog),
   m_Checker(gamePlugin->feature<ModDataChecker>()), m_DataFolderName(gamePlugin->dataDirectory().dirName().toLower()) {
 
   ui->setupUi(this);
@@ -91,7 +91,7 @@ InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue
 
   // Connect the tree slots:
   connect(m_Tree, &ArchiveTreeWidget::treeCheckStateChanged, this, &InstallDialog::onTreeCheckStateChanged);
-  connect(m_Tree, &ArchiveTreeWidget::itemMoved, this, &InstallDialog::onItemMoved);  
+  connect(m_Tree, &ArchiveTreeWidget::itemMoved, this, &InstallDialog::onItemMoved);
 
   // Retrieve the label to display problems:
   m_ProblemLabel = findChild<QLabel*>("problemLabel");
@@ -262,21 +262,35 @@ void InstallDialog::createDirectoryUnder(ArchiveTreeWidgetItem* item)
   }
 }
 
-
 void InstallDialog::onItemMoved(ArchiveTreeWidgetItem* source, ArchiveTreeWidgetItem* target) {
-  // Just insert the source in the target:
+  // just insert the source in the target.
   auto tree = target->entry()->astree();
 
-  // The REPLACE is probably not necessary since you cannot move item if they already exists.
   detachParents(source);
-  tree->insert(source->entry(), IFileTree::InsertPolicy::REPLACE);
+
+  // check if an entry exists with the same name, we check
+  // in the tree widget to find unchecked items
+  for (int i = 0; i < target->childCount(); ++i) {
+    auto* child = static_cast<ArchiveTreeWidgetItem*>(target->child(i));
+    if (child->entry()->compare(source->entry()->name()) == 0) {
+      // remove existing file and force check existing directory
+      if (child->entry()->isFile()) {
+        target->removeChild(child);
+      }
+      else {
+        child->setCheckState(0, Qt::Checked);
+      }
+      break;
+    }
+  }
+
+  tree->insert(source->entry(), IFileTree::InsertPolicy::MERGE);
 
   attachParents(target);
 
   // Update the problem:
   updateProblems();
 }
-
 
 void InstallDialog::onTreeCheckStateChanged(ArchiveTreeWidgetItem* item) {
 
@@ -287,9 +301,9 @@ void InstallDialog::onTreeCheckStateChanged(ArchiveTreeWidgetItem* item) {
   // user uncheck a directory and then check a file under it, the other files would
   // still be attached.
   //
-  // The two recursive methods only go down to the expanded (based on isPopulated() tree, for 
+  // The two recursive methods only go down to the expanded (based on isPopulated() tree, for
   // two reasons:
-  //   1. If a tree item has not been populated, then detaching an entry from its parent will 
+  //   1. If a tree item has not been populated, then detaching an entry from its parent will
   //      delete it since there would be no remaining shared pointers.
   //   2. If the tree has not been populated yet, all the entries under it are still attached,
   //      so there is no need to process them differently. Detaching a non-expanded item can
@@ -311,7 +325,7 @@ void InstallDialog::onTreeCheckStateChanged(ArchiveTreeWidgetItem* item) {
   else {
     attachParents(item);
   }
-  
+
   updateProblems();
 }
 
