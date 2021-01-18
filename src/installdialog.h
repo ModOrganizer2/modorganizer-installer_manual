@@ -92,59 +92,9 @@ private:
 
   bool testForProblem();
   void updateProblems();
-
-  /**
-   * @brief Detach the entry of this item from its parent, and recursively detach
-   *     all of its parent if they become empty.
-   *
-   * @param item The item to detach.
-   */
-  void detachParents(ArchiveTreeWidgetItem* item);
-
-  /**
-   * @brief Re-attach the entry of this item to its parent, and recursively attach
-   *    all of its parent if they were empty (and thus detached).
-   *
-   * @param item The item to attach.
-   */
-  void attachParents(ArchiveTreeWidgetItem* item);
-
-  /**
-   * @brief Recursively re-insert all the entries below the given item in their
-   *     corresponding parents. This method does not recurse in items that have not 
-   *     been populated yet.
-   *
-   * @param item The top-level item to start.
-   */
-  void recursiveInsert(ArchiveTreeWidgetItem* item);
-
-  /**
-   * @brief Recursively detach all the entries below the given item from their
-   *     corresponding parents. This method does not recurse in items that have not 
-   *     been populated yet.
-   *
-   * @param item The top-level item to start.
-   */
-  void recursiveDetach(ArchiveTreeWidgetItem* item);
-
-  /**
-   * @brief Set the data root widget.
-   */
-  void setDataRoot(ArchiveTreeWidgetItem* const root);
-
-  /**
-   * @brief Create a directory under the given tree item, asking
-   *     the user for a name.
-   *
-   * @param treeItem Parent item of the directory.
-   */
-  void createDirectoryUnder(ArchiveTreeWidgetItem *treeItem);
+  void createDirectoryUnder(ArchiveTreeWidgetItem* treeItem);
 
 private slots:
-
-  // The two slots to connect to the tree:
-  void onItemMoved(ArchiveTreeWidgetItem* source, ArchiveTreeWidgetItem* target);
-  void onTreeCheckStateChanged(ArchiveTreeWidgetItem* item);
 
   // Automatic slots that are directly bound to the UI:
   void on_treeContent_customContextMenuRequested(QPoint pos);
@@ -159,24 +109,16 @@ private:
   // Name of the "data" directory:
   QString m_DataFolderName;
 
+  // the tree root is the initial root that will never change (should be const
+  // but cannot be since the parent tree cannot be constructed in the member
+  // initializer list)
+  //
+  // the tree root is not actually added to the tree, but is used to maintain
+  // the state of the tree and not lose entries when unsetting data root
+  //
   ArchiveTreeWidget *m_Tree;
+  ArchiveTreeWidgetItem* m_TreeRoot;
   QLabel *m_ProblemLabel;
-
-  // IMPORTANT: If you intend to work on this and understand this, read the detailed
-  // explanation at the beginning of the installdialog.cpp file.
-
-  // The tree root is the initial root that will never change (should be const
-  // but cannot be since the parent tree cannot be consstructed in the member
-  // initializer list):
-  ArchiveTreeWidgetItem *m_TreeRoot;
-
-  // The data root is the real widget of the current data. This widget
-  // is not the real root that is added to the tree.
-  ArchiveTreeWidgetItem *m_DataRoot;
-
-  // This is the actual tree in the widget  (should be const but cannot be since 
-  // the parent tree cannot be consstructed in the member initializer list):
-  ArchiveTreeWidgetItem *m_ViewRoot;
 
 };
 

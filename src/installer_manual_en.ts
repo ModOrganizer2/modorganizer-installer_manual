@@ -2,6 +2,30 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US">
 <context>
+    <name>ArchiveTreeWidget</name>
+    <message>
+        <location filename="archivetree.cpp" line="419"/>
+        <location filename="archivetree.cpp" line="429"/>
+        <source>Cannot drop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="archivetree.cpp" line="420"/>
+        <source>Cannot drop &apos;%1&apos; into one of its subfolder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="archivetree.cpp" line="431"/>
+        <source>A file &apos;%1&apos; already exists in folder &apos;%2&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="archivetree.cpp" line="432"/>
+        <source>A folder &apos;%1&apos; already exists in folder &apos;%2&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>InstallDialog</name>
     <message>
         <location filename="installdialog.ui" line="20"/>
@@ -10,7 +34,7 @@
     </message>
     <message>
         <location filename="installdialog.ui" line="46"/>
-        <location filename="installdialog.cpp" line="239"/>
+        <location filename="installdialog.cpp" line="125"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -49,77 +73,77 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="239"/>
+        <location filename="installdialog.cpp" line="125"/>
         <source>Enter a directory name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="139"/>
+        <location filename="installdialog.cpp" line="95"/>
         <source>Cannot check the content of &lt;%1&gt;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="140"/>
+        <location filename="installdialog.cpp" line="96"/>
         <source>The plugin for the current game does not provide a way to check the content of &lt;%1&gt;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="145"/>
+        <location filename="installdialog.cpp" line="101"/>
         <source>The content of &lt;%1&gt; looks valid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="146"/>
+        <location filename="installdialog.cpp" line="102"/>
         <source>The content of &lt;%1&gt; seems valid for the current game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="150"/>
+        <location filename="installdialog.cpp" line="106"/>
         <source>The content of &lt;%1&gt; does not look valid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="151"/>
+        <location filename="installdialog.cpp" line="107"/>
         <source>The content of &lt;%1&gt; is probably not valid for the current game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="231"/>
+        <location filename="installdialog.cpp" line="117"/>
         <source>Cannot create directory under a file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="247"/>
+        <location filename="installdialog.cpp" line="133"/>
         <source>A directory or file with that name already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="329"/>
+        <location filename="installdialog.cpp" line="152"/>
         <source>Set as &lt;%1&gt; directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="333"/>
+        <location filename="installdialog.cpp" line="156"/>
         <source>Unset &lt;%1&gt; directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="342"/>
+        <location filename="installdialog.cpp" line="165"/>
         <source>Create directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="345"/>
+        <location filename="installdialog.cpp" line="168"/>
         <source>&amp;Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="356"/>
+        <location filename="installdialog.cpp" line="179"/>
         <source>Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="357"/>
+        <location filename="installdialog.cpp" line="180"/>
         <source>This mod was probably NOT set up correctly, most likely it will NOT work. You should first correct the directory layout using the content-tree.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -127,7 +151,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>InstallerManual</name>
     <message>
-        <location filename="installermanual.cpp" line="61"/>
+        <location filename="installermanual.cpp" line="56"/>
+        <source>Manual Installer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="installermanual.cpp" line="66"/>
         <source>Fallback installer for mods that can be extracted but can&apos;t be handled by another installer</source>
         <translation type="unfinished"></translation>
     </message>
