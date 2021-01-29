@@ -22,11 +22,11 @@ build_script:
     
     if($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode )  }
 artifacts:
-- path: build\src\installer_manual.dll
+- path: vsbuild\src\RelWithDebInfo\installer_manual.dll
   name: installer_manual_dll
-- path: build\src\installer_manual.pdb
+- path: vsbuild\src\RelWithDebInfo\installer_manual.pdb
   name: installer_manual_pdb
-- path: build\src\installer_manual.lib
+- path: vsbuild\src\RelWithDebInfo\installer_manual.lib
   name: installer_manual_lib
 on_success:
   - ps: Set-Location -Path $env:APPVEYOR_BUILD_FOLDER
