@@ -118,32 +118,32 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="152"/>
+        <location filename="installdialog.cpp" line="153"/>
         <source>Set as &lt;%1&gt; directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="156"/>
+        <location filename="installdialog.cpp" line="157"/>
         <source>Unset &lt;%1&gt; directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="165"/>
+        <location filename="installdialog.cpp" line="166"/>
         <source>Create directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="168"/>
+        <location filename="installdialog.cpp" line="169"/>
         <source>&amp;Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="179"/>
+        <location filename="installdialog.cpp" line="180"/>
         <source>Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installdialog.cpp" line="180"/>
+        <location filename="installdialog.cpp" line="181"/>
         <source>This mod was probably NOT set up correctly, most likely it will NOT work. You should first correct the directory layout using the content-tree.</source>
         <translation type="unfinished"></translation>
     </message>
