@@ -134,6 +134,7 @@ void InstallDialog::createDirectoryUnder(ArchiveTreeWidgetItem* item)
       return;
     }
 
+    item->setExpanded(true);
     auto* newItem = m_Tree->addDirectory(item, result);
     m_Tree->scrollToItem(newItem);
   }
