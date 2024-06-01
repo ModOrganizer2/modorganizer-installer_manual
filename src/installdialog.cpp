@@ -33,7 +33,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 using namespace MOBase;
 
 
-InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, const MOBase::ModDataChecker* modDataChecker, const QString& dataName, QWidget *parent)
+InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, std::shared_ptr<const MOBase::ModDataChecker> modDataChecker, const QString& dataName, QWidget *parent)
   : TutorableDialog("InstallDialog", parent),
   ui(new Ui::InstallDialog),
   m_Checker(modDataChecker),

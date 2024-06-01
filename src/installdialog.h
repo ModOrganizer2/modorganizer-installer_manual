@@ -61,7 +61,7 @@ public:
    * @param dataName The name of the data folder for the game.
    * @param parent Parent widget.
    **/
-  explicit InstallDialog(std::shared_ptr<MOBase::IFileTree> tree, const MOBase::GuessedValue<QString> &modName, const MOBase::ModDataChecker* modDataChecker, const QString& dataName, QWidget *parent = 0);
+  explicit InstallDialog(std::shared_ptr<MOBase::IFileTree> tree, const MOBase::GuessedValue<QString> &modName, std::shared_ptr<const MOBase::ModDataChecker> modDataChecker, const QString& dataName, QWidget *parent = 0);
   ~InstallDialog();
 
   /**
@@ -105,7 +105,7 @@ private slots:
 private:
   Ui::InstallDialog *ui;
 
-  const MOBase::ModDataChecker* m_Checker;
+  std::shared_ptr<const MOBase::ModDataChecker> m_Checker;
 
   // Name of the "data" directory:
   QString m_DataFolderName;
