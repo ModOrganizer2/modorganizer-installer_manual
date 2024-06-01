@@ -151,12 +151,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>InstallerManual</name>
     <message>
-        <location filename="installermanual.cpp" line="56"/>
+        <location filename="installermanual.cpp" line="57"/>
         <source>Manual Installer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installermanual.cpp" line="66"/>
+        <location filename="installermanual.cpp" line="67"/>
         <source>Fallback installer for mods that can be extracted but can&apos;t be handled by another installer</source>
         <translation type="unfinished"></translation>
     </message>
