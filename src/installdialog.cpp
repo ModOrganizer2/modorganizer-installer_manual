@@ -33,11 +33,11 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 using namespace MOBase;
 
 
-InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, const IPluginGame *gamePlugin, QWidget *parent)
+InstallDialog::InstallDialog(std::shared_ptr<IFileTree> tree, const GuessedValue<QString> &modName, std::shared_ptr<const MOBase::ModDataChecker> modDataChecker, const QString& dataName, QWidget *parent)
   : TutorableDialog("InstallDialog", parent),
   ui(new Ui::InstallDialog),
-  m_Checker(gamePlugin->feature<ModDataChecker>()),
-  m_DataFolderName(gamePlugin->dataDirectory().dirName().toLower())
+  m_Checker(modDataChecker),
+  m_DataFolderName(dataName)
 {
 
   ui->setupUi(this);

@@ -18,18 +18,19 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "installermanual.h"
-#include "installdialog.h"
 
+#include <igamefeatures.h>
 #include <utility.h>
 #include <iinstallationmanager.h>
 #include <iplugingame.h>
+#include <moddatachecker.h>
 
 #include <QtPlugin>
 #include <QDialog>
 
 #include <Shellapi.h>
 
-#include "moddatachecker.h"
+#include "installdialog.h"
 
 
 using namespace MOBase;
@@ -40,7 +41,7 @@ InstallerManual::InstallerManual()
 {
 }
 
-bool InstallerManual::init(IOrganizer *moInfo)
+bool InstallerManual::init(IOrganizer* moInfo)
 {
   m_MOInfo = moInfo;
   return true;
@@ -94,7 +95,7 @@ bool InstallerManual::isArchiveSupported(std::shared_ptr<const MOBase::IFileTree
 }
 
 
-void InstallerManual::openFile(const FileTreeEntry *entry)
+void InstallerManual::openFile(const FileTreeEntry* entry)
 {
   QString tempName = manager()->extractFile(entry->shared_from_this());
 
@@ -113,10 +114,11 @@ void InstallerManual::openFile(const FileTreeEntry *entry)
 
 
 IPluginInstaller::EInstallResult InstallerManual::install(
-  GuessedValue<QString> &modName, std::shared_ptr<MOBase::IFileTree> &tree, QString&, int&)
+  GuessedValue<QString>& modName, std::shared_ptr<MOBase::IFileTree>& tree, QString&, int&)
 {
   qDebug("offering installation dialog");
-  InstallDialog dialog(tree, modName, m_MOInfo->managedGame(), parentWidget());
+  InstallDialog dialog(tree, modName, m_MOInfo->gameFeatures()->gameFeature<ModDataChecker>(),
+    m_MOInfo->managedGame()->dataDirectory().dirName().toLower(), parentWidget());
   connect(&dialog, &InstallDialog::openFile, this, &InstallerManual::openFile);
   if (dialog.exec() == QDialog::Accepted) {
     modName.update(dialog.getModName(), GUESS_USER);
@@ -124,7 +126,8 @@ IPluginInstaller::EInstallResult InstallerManual::install(
     // TODO probably more complicated than necessary
     tree = dialog.getModifiedTree();
     return IPluginInstaller::RESULT_SUCCESS;
-  } else {
+  }
+  else {
     return IPluginInstaller::RESULT_CANCELED;
   }
 }

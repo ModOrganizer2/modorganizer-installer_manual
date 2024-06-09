@@ -57,10 +57,11 @@ public:
    *
    * @param tree Tree structure describing the original archive structure.
    * @param modName Name of the mod. The name can be modified through the dialog.
-   * @param gamePlugin The current game plugin.
+   * @param modDataChecker The mod data checker to use to check.
+   * @param dataName The name of the data folder for the game.
    * @param parent Parent widget.
    **/
-  explicit InstallDialog(std::shared_ptr<MOBase::IFileTree> tree, const MOBase::GuessedValue<QString> &modName, const MOBase::IPluginGame* gamePlugin, QWidget *parent = 0);
+  explicit InstallDialog(std::shared_ptr<MOBase::IFileTree> tree, const MOBase::GuessedValue<QString> &modName, std::shared_ptr<const MOBase::ModDataChecker> modDataChecker, const QString& dataName, QWidget *parent = 0);
   ~InstallDialog();
 
   /**
@@ -104,7 +105,7 @@ private slots:
 private:
   Ui::InstallDialog *ui;
 
-  const ModDataChecker* m_Checker;
+  std::shared_ptr<const MOBase::ModDataChecker> m_Checker;
 
   // Name of the "data" directory:
   QString m_DataFolderName;
