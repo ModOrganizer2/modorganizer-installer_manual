@@ -20,26 +20,21 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "installermanual.h"
 
 #include <igamefeatures.h>
-#include <utility.h>
 #include <iinstallationmanager.h>
 #include <iplugingame.h>
 #include <moddatachecker.h>
+#include <utility.h>
 
-#include <QtPlugin>
 #include <QDialog>
+#include <QtPlugin>
 
 #include <Shellapi.h>
 
 #include "installdialog.h"
 
-
 using namespace MOBase;
 
-
-InstallerManual::InstallerManual()
-  : m_MOInfo(nullptr)
-{
-}
+InstallerManual::InstallerManual() : m_MOInfo(nullptr) {}
 
 bool InstallerManual::init(IOrganizer* moInfo)
 {
@@ -64,7 +59,8 @@ QString InstallerManual::author() const
 
 QString InstallerManual::description() const
 {
-  return tr("Fallback installer for mods that can be extracted but can't be handled by another installer");
+  return tr("Fallback installer for mods that can be extracted but can't be handled by "
+            "another installer");
 }
 
 VersionInfo InstallerManual::version() const
@@ -82,18 +78,15 @@ unsigned int InstallerManual::priority() const
   return 0;
 }
 
-
 bool InstallerManual::isManualInstaller() const
 {
   return true;
 }
 
-
 bool InstallerManual::isArchiveSupported(std::shared_ptr<const MOBase::IFileTree>) const
 {
   return true;
 }
-
 
 void InstallerManual::openFile(const FileTreeEntry* entry)
 {
@@ -101,24 +94,25 @@ void InstallerManual::openFile(const FileTreeEntry* entry)
 
   SHELLEXECUTEINFOW execInfo;
   memset(&execInfo, 0, sizeof(SHELLEXECUTEINFOW));
-  execInfo.cbSize = sizeof(SHELLEXECUTEINFOW);
-  execInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-  execInfo.lpVerb = L"open";
+  execInfo.cbSize        = sizeof(SHELLEXECUTEINFOW);
+  execInfo.fMask         = SEE_MASK_NOCLOSEPROCESS;
+  execInfo.lpVerb        = L"open";
   std::wstring fileNameW = ToWString(tempName);
-  execInfo.lpFile = fileNameW.c_str();
-  execInfo.nShow = SW_SHOWNORMAL;
+  execInfo.lpFile        = fileNameW.c_str();
+  execInfo.nShow         = SW_SHOWNORMAL;
   if (!::ShellExecuteExW(&execInfo)) {
     qCritical("failed to spawn %s: %d", qUtf8Printable(tempName), ::GetLastError());
   }
 }
 
-
-IPluginInstaller::EInstallResult InstallerManual::install(
-  GuessedValue<QString>& modName, std::shared_ptr<MOBase::IFileTree>& tree, QString&, int&)
+IPluginInstaller::EInstallResult
+InstallerManual::install(GuessedValue<QString>& modName,
+                         std::shared_ptr<MOBase::IFileTree>& tree, QString&, int&)
 {
   qDebug("offering installation dialog");
-  InstallDialog dialog(tree, modName, m_MOInfo->gameFeatures()->gameFeature<ModDataChecker>(),
-    m_MOInfo->managedGame()->dataDirectory().dirName().toLower(), parentWidget());
+  InstallDialog dialog(
+      tree, modName, m_MOInfo->gameFeatures()->gameFeature<ModDataChecker>(),
+      m_MOInfo->managedGame()->dataDirectory().dirName().toLower(), parentWidget());
   connect(&dialog, &InstallDialog::openFile, this, &InstallerManual::openFile);
   if (dialog.exec() == QDialog::Accepted) {
     modName.update(dialog.getModName(), GUESS_USER);
@@ -126,13 +120,11 @@ IPluginInstaller::EInstallResult InstallerManual::install(
     // TODO probably more complicated than necessary
     tree = dialog.getModifiedTree();
     return IPluginInstaller::RESULT_SUCCESS;
-  }
-  else {
+  } else {
     return IPluginInstaller::RESULT_CANCELED;
   }
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(installerManual, InstallerManual)
 #endif
-

@@ -19,8 +19,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "archivetree.h"
 
-#include <QDragMoveEvent>
 #include <QDebug>
+#include <QDragMoveEvent>
 #include <QMessageBox>
 
 #include <ifiletree.h>
@@ -39,46 +39,53 @@ using namespace MOBase;
 //   3) when a directory is created,
 //   4) when a directory is "set as data root".
 //
-// Case 1 is handled automatically in the setExpanded method of ArchiveTreeWidget. Cases 2
-// and 3 could be dealt with differently, but populating the tree before inserting an item
-// makes everything else easier (not that populating the widget is different from populating
-// the IFileTree which is done automatically). Case 4 is handled manually in setDataRoot.
+// Case 1 is handled automatically in the setExpanded method of ArchiveTreeWidget. Cases
+// 2 and 3 could be dealt with differently, but populating the tree before inserting an
+// item makes everything else easier (not that populating the widget is different from
+// populating the IFileTree which is done automatically). Case 4 is handled manually in
+// setDataRoot.
 //
-// Another specificity of the implementation is the treeCheckStateChanged() signal emitted
-// by the ArchiveTreeWidget. This signal is used to avoid having to connect to the itemChanged()
-// signal or overriding the dataChanged() method which are called much more often than those.
-// The treeCheckStateChanged() signal is send only for the item that has actually been changed
-// by the user. While the interface is automatically updated by Qt, we need to update the
-// underlying tree manually. This is done by doing the following things:
+// Another specificity of the implementation is the treeCheckStateChanged() signal
+// emitted by the ArchiveTreeWidget. This signal is used to avoid having to connect to
+// the itemChanged() signal or overriding the dataChanged() method which are called much
+// more often than those. The treeCheckStateChanged() signal is send only for the item
+// that has actually been changed by the user. While the interface is automatically
+// updated by Qt, we need to update the underlying tree manually. This is done by doing
+// the following things:
 //   1) When an item is unchecked:
-//      - We detach the corresponding entry from its parent, and recursively detach the empty
+//      - We detach the corresponding entry from its parent, and recursively detach the
+//      empty
 //        parents (or the ones that become empty).
-//      - If the entry is a directory and the item has been populated, we recursively detach
-//        all the child entries for all the child items that have been populated (no need to
-//        do it for non-populated items)>
-//   2) When an item is checked, we do the same process but we re-attach parents and re-insert
+//      - If the entry is a directory and the item has been populated, we recursively
+//      detach
+//        all the child entries for all the child items that have been populated (no
+//        need to do it for non-populated items)>
+//   2) When an item is checked, we do the same process but we re-attach parents and
+//   re-insert
 //      children.
 //
-// Detaching or re-attaching parents is also done when a directory is created (if the directory
-// is created in an empty directory, we need to re-attach), or when an item is moved (if the
-// directory the item comes from is now empty or if the target directory was empty).
+// Detaching or re-attaching parents is also done when a directory is created (if the
+// directory is created in an empty directory, we need to re-attach), or when an item is
+// moved (if the directory the item comes from is now empty or if the target directory
+// was empty).
 //
 
 ArchiveTreeWidgetItem::ArchiveTreeWidgetItem(QString dataName)
-  : QTreeWidgetItem(QStringList(dataName)), m_Entry(nullptr) {
+    : QTreeWidgetItem(QStringList(dataName)), m_Entry(nullptr)
+{
   setFlags(flags() & ~Qt::ItemIsUserCheckable);
   setExpanded(true);
   m_Populated = true;
 }
 
-ArchiveTreeWidgetItem::ArchiveTreeWidgetItem(std::shared_ptr<MOBase::FileTreeEntry> entry)
-  : QTreeWidgetItem(QStringList(entry->name())), m_Entry(entry)
+ArchiveTreeWidgetItem::ArchiveTreeWidgetItem(
+    std::shared_ptr<MOBase::FileTreeEntry> entry)
+    : QTreeWidgetItem(QStringList(entry->name())), m_Entry(entry)
 {
   if (entry->isDir()) {
     setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
     setFlags(flags() | Qt::ItemIsUserCheckable | Qt::ItemIsAutoTristate);
-  }
-  else {
+  } else {
     setFlags(flags() | Qt::ItemIsUserCheckable | Qt::ItemNeverHasChildren);
   }
   setCheckState(0, Qt::Checked);
@@ -100,7 +107,8 @@ void ArchiveTreeWidgetItem::setData(int column, int role, const QVariant& value)
   }
 }
 
-void ArchiveTreeWidgetItem::populate(bool force) {
+void ArchiveTreeWidgetItem::populate(bool force)
+{
 
   // Only populates once:
   if (isPopulated() && !force) {
@@ -116,9 +124,10 @@ void ArchiveTreeWidgetItem::populate(bool force) {
   // entries at the beginning (the item can only contains children if a
   // directory has been created under it or if entries has been moved under
   // it):
-  for (auto &entry: *entry()->astree()) {
+  for (auto& entry : *entry()->astree()) {
     auto newItem = new ArchiveTreeWidgetItem(entry);
-    newItem->setCheckState(0, flags().testFlag(Qt::ItemIsUserCheckable) ? checkState(0) : Qt::Checked);
+    newItem->setCheckState(0, flags().testFlag(Qt::ItemIsUserCheckable) ? checkState(0)
+                                                                        : Qt::Checked);
     addChild(newItem);
   }
 
@@ -131,11 +140,12 @@ void ArchiveTreeWidgetItem::populate(bool force) {
   m_Populated = true;
 }
 
-ArchiveTreeWidget::ArchiveTreeWidget(QWidget *parent) : QTreeWidget(parent)
+ArchiveTreeWidget::ArchiveTreeWidget(QWidget* parent) : QTreeWidget(parent)
 {
   setAutoExpandDelay(1000);
   setDragDropOverwriteMode(true);
-  connect(this, &ArchiveTreeWidget::itemExpanded, this, &ArchiveTreeWidget::populateItem);
+  connect(this, &ArchiveTreeWidget::itemExpanded, this,
+          &ArchiveTreeWidget::populateItem);
 }
 
 void ArchiveTreeWidget::setup(QString dataFolderName)
@@ -169,8 +179,9 @@ void ArchiveTreeWidget::setDataRoot(ArchiveTreeWidgetItem* const root)
   emit treeChanged();
 }
 
-void ArchiveTreeWidget::detachParents(ArchiveTreeWidgetItem* item) {
-  auto entry = item->entry();
+void ArchiveTreeWidget::detachParents(ArchiveTreeWidgetItem* item)
+{
+  auto entry  = item->entry();
   auto parent = entry->parent();
   entry->detach();
   while (parent != nullptr && parent->empty()) {
@@ -178,12 +189,12 @@ void ArchiveTreeWidget::detachParents(ArchiveTreeWidgetItem* item) {
     parent->detach();
     parent = tmp;
   }
-
 }
 
-void ArchiveTreeWidget::attachParents(ArchiveTreeWidgetItem* item) {
+void ArchiveTreeWidget::attachParents(ArchiveTreeWidgetItem* item)
+{
   while (item->parent() != nullptr) {
-    auto parent = static_cast<ArchiveTreeWidgetItem*>(item->parent());
+    auto parent      = static_cast<ArchiveTreeWidgetItem*>(item->parent());
     auto parentEntry = parent->entry();
     if (parentEntry != nullptr) {
       parentEntry->astree()->insert(item->entry());
@@ -192,8 +203,8 @@ void ArchiveTreeWidget::attachParents(ArchiveTreeWidgetItem* item) {
   }
 }
 
-
-void ArchiveTreeWidget::recursiveInsert(ArchiveTreeWidgetItem* item) {
+void ArchiveTreeWidget::recursiveInsert(ArchiveTreeWidgetItem* item)
+{
   if (item->isPopulated()) {
     auto tree = item->entry()->astree();
     for (int i = 0; i < item->childCount(); ++i) {
@@ -206,7 +217,8 @@ void ArchiveTreeWidget::recursiveInsert(ArchiveTreeWidgetItem* item) {
   }
 }
 
-void ArchiveTreeWidget::recursiveDetach(ArchiveTreeWidgetItem* item) {
+void ArchiveTreeWidget::recursiveDetach(ArchiveTreeWidgetItem* item)
+{
   if (item->isPopulated()) {
     for (int i = 0; i < item->childCount(); ++i) {
       auto child = static_cast<ArchiveTreeWidgetItem*>(item->child(i));
@@ -218,13 +230,14 @@ void ArchiveTreeWidget::recursiveDetach(ArchiveTreeWidgetItem* item) {
   }
 }
 
-ArchiveTreeWidgetItem* ArchiveTreeWidget::addDirectory(ArchiveTreeWidgetItem* item, QString name)
+ArchiveTreeWidgetItem* ArchiveTreeWidget::addDirectory(ArchiveTreeWidgetItem* item,
+                                                       QString name)
 {
-  auto tree = item->entry()->astree();
+  auto tree     = item->entry()->astree();
   auto* newItem = new ArchiveTreeWidgetItem(tree->addDirectory(name));
 
   // find the insert position
-  auto it = std::find_if(tree->begin(), tree->end(), [name](auto&& entry) {
+  auto it   = std::find_if(tree->begin(), tree->end(), [name](auto&& entry) {
     return entry->compare(name) == 0;
   });
   int index = it - tree->begin();
@@ -238,7 +251,9 @@ ArchiveTreeWidgetItem* ArchiveTreeWidget::addDirectory(ArchiveTreeWidgetItem* it
   return newItem;
 }
 
-void ArchiveTreeWidget::moveItem(ArchiveTreeWidgetItem* source, ArchiveTreeWidgetItem* target) {
+void ArchiveTreeWidget::moveItem(ArchiveTreeWidgetItem* source,
+                                 ArchiveTreeWidgetItem* target)
+{
   // just insert the source in the target.
   auto tree = target->entry()->astree();
 
@@ -252,8 +267,7 @@ void ArchiveTreeWidget::moveItem(ArchiveTreeWidgetItem* source, ArchiveTreeWidge
       // remove existing file and force check existing directory
       if (child->entry()->isFile()) {
         target->removeChild(child);
-      }
-      else {
+      } else {
         child->setCheckState(0, Qt::Checked);
       }
       break;
@@ -267,7 +281,8 @@ void ArchiveTreeWidget::moveItem(ArchiveTreeWidgetItem* source, ArchiveTreeWidge
   emit treeChanged();
 }
 
-void ArchiveTreeWidget::onTreeCheckStateChanged(ArchiveTreeWidgetItem* item) {
+void ArchiveTreeWidget::onTreeCheckStateChanged(ArchiveTreeWidgetItem* item)
+{
 
   auto entry = item->entry();
 
@@ -276,18 +291,19 @@ void ArchiveTreeWidget::onTreeCheckStateChanged(ArchiveTreeWidgetItem* item) {
   // user uncheck a directory and then check a file under it, the other files would
   // still be attached.
   //
-  // The two recursive methods only go down to the expanded (based on isPopulated() tree, for
-  // two reasons:
-  //   1. If a tree item has not been populated, then detaching an entry from its parent will
+  // The two recursive methods only go down to the expanded (based on isPopulated()
+  // tree, for two reasons:
+  //   1. If a tree item has not been populated, then detaching an entry from its parent
+  //   will
   //      delete it since there would be no remaining shared pointers.
-  //   2. If the tree has not been populated yet, all the entries under it are still attached,
-  //      so there is no need to process them differently. Detaching a non-expanded item can
-  //      be done by simply detaching the tree, no need to detach all the children.
+  //   2. If the tree has not been populated yet, all the entries under it are still
+  //   attached,
+  //      so there is no need to process them differently. Detaching a non-expanded item
+  //      can be done by simply detaching the tree, no need to detach all the children.
   if (entry->isDir()) {
     if (item->checkState(0) == Qt::Checked && item->isPopulated()) {
       recursiveInsert(item);
-    }
-    else if (item->checkState(0) == Qt::Unchecked && item->isPopulated()) {
+    } else if (item->checkState(0) == Qt::Unchecked && item->isPopulated()) {
       recursiveDetach(item);
     }
   }
@@ -304,7 +320,8 @@ void ArchiveTreeWidget::onTreeCheckStateChanged(ArchiveTreeWidgetItem* item) {
   emit treeChanged();
 }
 
-bool ArchiveTreeWidget::testMovePossible(ArchiveTreeWidgetItem* source, ArchiveTreeWidgetItem* target)
+bool ArchiveTreeWidget::testMovePossible(ArchiveTreeWidgetItem* source,
+                                         ArchiveTreeWidgetItem* target)
 {
   if (target == nullptr || source == nullptr) {
     return false;
@@ -321,9 +338,9 @@ bool ArchiveTreeWidget::testMovePossible(ArchiveTreeWidgetItem* source, ArchiveT
   return true;
 }
 
-void ArchiveTreeWidget::dragEnterEvent(QDragEnterEvent *event)
+void ArchiveTreeWidget::dragEnterEvent(QDragEnterEvent* event)
 {
-  QTreeWidgetItem *source = this->currentItem();
+  QTreeWidgetItem* source = this->currentItem();
   if ((source == nullptr) || (source->parent() == nullptr)) {
     // can't change top level
     event->ignore();
@@ -331,23 +348,21 @@ void ArchiveTreeWidget::dragEnterEvent(QDragEnterEvent *event)
   } else {
     QTreeWidget::dragEnterEvent(event);
   }
-
 }
 
-void ArchiveTreeWidget::dragMoveEvent(QDragMoveEvent *event)
+void ArchiveTreeWidget::dragMoveEvent(QDragMoveEvent* event)
 {
-  if (!testMovePossible(
-    static_cast<ArchiveTreeWidgetItem*>(currentItem()),
-    static_cast<ArchiveTreeWidgetItem*>(itemAt(event->pos())))) {
+  if (!testMovePossible(static_cast<ArchiveTreeWidgetItem*>(currentItem()),
+                        static_cast<ArchiveTreeWidgetItem*>(itemAt(event->pos())))) {
     event->ignore();
   } else {
     QTreeWidget::dragMoveEvent(event);
   }
 }
 
-static bool isAncestor(const QTreeWidgetItem *ancestor, const QTreeWidgetItem *item)
+static bool isAncestor(const QTreeWidgetItem* ancestor, const QTreeWidgetItem* item)
 {
-  QTreeWidgetItem *iter = item->parent();
+  QTreeWidgetItem* iter = item->parent();
   while (iter != nullptr) {
     if (iter == ancestor) {
       return true;
@@ -367,7 +382,7 @@ void ArchiveTreeWidget::refreshItem(ArchiveTreeWidgetItem* item)
   // that were expanded to re-expand them
   std::map<QString, bool, MOBase::FileNameComparator> expanded;
   while (item->childCount() > 0) {
-    auto* child = item->child(0);
+    auto* child                      = item->child(0);
     expanded[child->entry()->name()] = child->isExpanded();
     item->removeChild(child);
   }
@@ -382,12 +397,12 @@ void ArchiveTreeWidget::refreshItem(ArchiveTreeWidgetItem* item)
   }
 }
 
-void ArchiveTreeWidget::dropEvent(QDropEvent *event)
+void ArchiveTreeWidget::dropEvent(QDropEvent* event)
 {
   event->ignore();
 
   // target widget (should be a directory)
-  auto *target =  static_cast<ArchiveTreeWidgetItem*>(itemAt(event->pos()));
+  auto* target = static_cast<ArchiveTreeWidgetItem*>(itemAt(event->pos()));
 
   // this should not really happen because it is prevent by dragMoveEvent
   if (target->flags().testFlag(Qt::ItemNeverHasChildren)) {
@@ -415,9 +430,9 @@ void ArchiveTreeWidget::dropEvent(QDropEvent *event)
     // own child
     if (isAncestor(source, target)) {
       event->accept();
-      QMessageBox::warning(parentWidget(),
-        tr("Cannot drop"),
-        tr("Cannot drop '%1' into one of its subfolder.").arg(aSource->entry()->name()));
+      QMessageBox::warning(parentWidget(), tr("Cannot drop"),
+                           tr("Cannot drop '%1' into one of its subfolder.")
+                               .arg(aSource->entry()->name()));
       return;
     }
 
@@ -425,14 +440,16 @@ void ArchiveTreeWidget::dropEvent(QDropEvent *event)
     auto targetEntry = target->entry()->astree()->find(sourceEntry->name());
     if (targetEntry && targetEntry->fileType() != sourceEntry->fileType()) {
       event->accept();
-      QMessageBox::warning(parentWidget(),
-        tr("Cannot drop"),
-        targetEntry->isFile() ?
-        tr("A file '%1' already exists in folder '%2'.").arg(sourceEntry->name()).arg(target->entry()->name())
-        : tr("A folder '%1' already exists in folder '%2'.").arg(sourceEntry->name()).arg(target->entry()->name()));
+      QMessageBox::warning(parentWidget(), tr("Cannot drop"),
+                           targetEntry->isFile()
+                               ? tr("A file '%1' already exists in folder '%2'.")
+                                     .arg(sourceEntry->name())
+                                     .arg(target->entry()->name())
+                               : tr("A folder '%1' already exists in folder '%2'.")
+                                     .arg(sourceEntry->name())
+                                     .arg(target->entry()->name()));
       return;
     }
-
   }
 
   for (auto* source : sourceItems) {
@@ -448,8 +465,8 @@ void ArchiveTreeWidget::dropEvent(QDropEvent *event)
     // force expand item that are going to be merged
     for (int i = 0; i < target->childCount(); ++i) {
       auto* child = target->child(i);
-      if (child->entry()->compare(aSource->entry()->name()) == 0
-        && !child->flags().testFlag(Qt::ItemNeverHasChildren)) {
+      if (child->entry()->compare(aSource->entry()->name()) == 0 &&
+          !child->flags().testFlag(Qt::ItemNeverHasChildren)) {
         child->setExpanded(true);
       }
     }
@@ -464,5 +481,4 @@ void ArchiveTreeWidget::dropEvent(QDropEvent *event)
   // refresh the target item - this assumes that itemMoved is called synchronously
   // and perform the FileTree changes
   refreshItem(target);
-
 }

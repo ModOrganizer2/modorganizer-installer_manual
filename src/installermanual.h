@@ -23,17 +23,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <imoinfo.h>
 #include <iplugininstallersimple.h>
 
-
 class InstallerManual : public MOBase::IPluginInstallerSimple
 {
   Q_OBJECT
   Q_INTERFACES(MOBase::IPlugin MOBase::IPluginInstaller MOBase::IPluginInstallerSimple)
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   Q_PLUGIN_METADATA(IID "org.tannin.InstallerManual" FILE "installermanual.json")
 #endif
 
 public:
-
   InstallerManual();
 
   virtual bool init(MOBase::IOrganizer* moInfo) override;
@@ -48,13 +46,15 @@ public:
   virtual bool isManualInstaller() const;
 
   virtual bool isArchiveSupported(std::shared_ptr<const MOBase::IFileTree> tree) const;
-  virtual EInstallResult install(MOBase::GuessedValue<QString> &modName, std::shared_ptr<MOBase::IFileTree> &tree,
-                                 QString &version, int &modID);
+  virtual EInstallResult install(MOBase::GuessedValue<QString>& modName,
+                                 std::shared_ptr<MOBase::IFileTree>& tree,
+                                 QString& version, int& modID);
 
 private:
-
-  bool isSimpleArchiveTopLayer(const std::shared_ptr<const MOBase::IFileTree> tree) const;
-  std::shared_ptr<const MOBase::IFileTree> getSimpleArchiveBase(const std::shared_ptr<const MOBase::IFileTree> tree) const;
+  bool
+  isSimpleArchiveTopLayer(const std::shared_ptr<const MOBase::IFileTree> tree) const;
+  std::shared_ptr<const MOBase::IFileTree>
+  getSimpleArchiveBase(const std::shared_ptr<const MOBase::IFileTree> tree) const;
 
 private slots:
 
@@ -66,10 +66,7 @@ private slots:
   void openFile(const MOBase::FileTreeEntry* entry);
 
 private:
-
-  const MOBase::IOrganizer *m_MOInfo;
-
+  const MOBase::IOrganizer* m_MOInfo;
 };
 
-
-#endif // INSTALLERMANUAL_H
+#endif  // INSTALLERMANUAL_H
