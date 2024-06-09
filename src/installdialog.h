@@ -29,17 +29,16 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <moddatachecker.h>
 
 #include <QDialog>
-#include <QUuid>
-#include <QTreeWidgetItem>
 #include <QProgressDialog>
+#include <QTreeWidgetItem>
+#include <QUuid>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-
-namespace Ui {
-    class InstallDialog;
+namespace Ui
+{
+class InstallDialog;
 }
-
 
 /**
  * a dialog presented to manually define how a mod is to be installed. It provides
@@ -47,7 +46,7 @@ namespace Ui {
  **/
 class InstallDialog : public MOBase::TutorableDialog
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
   /**
@@ -61,7 +60,10 @@ public:
    * @param dataName The name of the data folder for the game.
    * @param parent Parent widget.
    **/
-  explicit InstallDialog(std::shared_ptr<MOBase::IFileTree> tree, const MOBase::GuessedValue<QString> &modName, std::shared_ptr<const MOBase::ModDataChecker> modDataChecker, const QString& dataName, QWidget *parent = 0);
+  explicit InstallDialog(std::shared_ptr<MOBase::IFileTree> tree,
+                         const MOBase::GuessedValue<QString>& modName,
+                         std::shared_ptr<const MOBase::ModDataChecker> modDataChecker,
+                         const QString& dataName, QWidget* parent = 0);
   ~InstallDialog();
 
   /**
@@ -87,10 +89,9 @@ signals:
    *
    * @param entry Entry corresponding to the file to open.
    */
-  void openFile(const MOBase::FileTreeEntry *entry);
+  void openFile(const MOBase::FileTreeEntry* entry);
 
 private:
-
   bool testForProblem();
   void updateProblems();
   void createDirectoryUnder(ArchiveTreeWidgetItem* treeItem);
@@ -103,7 +104,7 @@ private slots:
   void on_okButton_clicked();
 
 private:
-  Ui::InstallDialog *ui;
+  Ui::InstallDialog* ui;
 
   std::shared_ptr<const MOBase::ModDataChecker> m_Checker;
 
@@ -117,10 +118,9 @@ private:
   // the tree root is not actually added to the tree, but is used to maintain
   // the state of the tree and not lose entries when unsetting data root
   //
-  ArchiveTreeWidget *m_Tree;
+  ArchiveTreeWidget* m_Tree;
   ArchiveTreeWidgetItem* m_TreeRoot;
-  QLabel *m_ProblemLabel;
-
+  QLabel* m_ProblemLabel;
 };
 
-#endif // INSTALLDIALOG_H
+#endif  // INSTALLDIALOG_H

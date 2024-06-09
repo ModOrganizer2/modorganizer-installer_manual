@@ -29,14 +29,13 @@ class ArchiveTreeWidget;
 // custom tree widget that holds a shared pointer to the file tree entry
 // they represent
 //
-class ArchiveTreeWidgetItem : public QTreeWidgetItem {
+class ArchiveTreeWidgetItem : public QTreeWidgetItem
+{
 public:
-
   ArchiveTreeWidgetItem(QString dataName);
   ArchiveTreeWidgetItem(std::shared_ptr<MOBase::FileTreeEntry> entry);
 
 public:
-
   // populate this tree widget item if it has not been populated yet
   // or if force is true
   //
@@ -48,36 +47,32 @@ public:
 
   // replace the entry corresponding to this item
   //
-  void setEntry(std::shared_ptr<MOBase::FileTreeEntry> entry) {
-    m_Entry = entry;
-  }
+  void setEntry(std::shared_ptr<MOBase::FileTreeEntry> entry) { m_Entry = entry; }
 
   // retrieve the entry corresponding to this item
   //
-  std::shared_ptr<MOBase::FileTreeEntry> entry() const {
-    return m_Entry;
-  }
+  std::shared_ptr<MOBase::FileTreeEntry> entry() const { return m_Entry; }
 
   // overriden method to avoid propagating dataChanged events
   //
   void setData(int column, int role, const QVariant& value) override;
 
-  ArchiveTreeWidgetItem* parent() const {
+  ArchiveTreeWidgetItem* parent() const
+  {
     return static_cast<ArchiveTreeWidgetItem*>(QTreeWidgetItem::parent());
   }
 
-  ArchiveTreeWidgetItem* child(int index) const {
+  ArchiveTreeWidgetItem* child(int index) const
+  {
     return static_cast<ArchiveTreeWidgetItem*>(QTreeWidgetItem::child(index));
   }
 
 protected:
-
   std::shared_ptr<MOBase::FileTreeEntry> m_Entry;
   bool m_Populated = false;
 
   friend class ArchiveTreeWidget;
 };
-
 
 // Qt tree widget used to display the content of an archive in the manual installation
 // dialog
@@ -87,12 +82,10 @@ class ArchiveTreeWidget : public QTreeWidget
   Q_OBJECT
 
 public:
-
   explicit ArchiveTreeWidget(QWidget* parent = 0);
   void setup(QString dataFolderName);
 
 public:
-
   // set the data root widget
   //
   void setDataRoot(ArchiveTreeWidgetItem* const root);
@@ -115,7 +108,6 @@ signals:
 public slots:
 
 protected:
-
   // detach the entry of this item from its parent, and recursively detach
   // all of its parent if they become
   //
@@ -154,12 +146,11 @@ protected:
   //
   void onTreeCheckStateChanged(ArchiveTreeWidgetItem* item);
 
-  void dragEnterEvent(QDragEnterEvent *event) override;
-  void dragMoveEvent(QDragMoveEvent *event) override;
-  void dropEvent(QDropEvent *event) override;
+  void dragEnterEvent(QDragEnterEvent* event) override;
+  void dragMoveEvent(QDragMoveEvent* event) override;
+  void dropEvent(QDropEvent* event) override;
 
 private:
-
   bool testMovePossible(ArchiveTreeWidgetItem* source, ArchiveTreeWidgetItem* target);
 
   // refresh the given item (after a drop)
@@ -174,14 +165,14 @@ private:
   //
   // - the data root is the real widget of the current data, this widget
   //   is not the real root that is added to the tree
-  // - the view root is the actual tree in the widget (should be const but cannot be since
+  // - the view root is the actual tree in the widget (should be const but cannot be
+  // since
   //   the parent tree cannot be consstructed in the member initializer list)
   //
   ArchiveTreeWidgetItem* m_DataRoot;
   ArchiveTreeWidgetItem* m_ViewRoot;
 
   friend class ArchiveTreeWidgetItem;
-
 };
 
-#endif // ARCHIVETREE_H
+#endif  // ARCHIVETREE_H
