@@ -19,16 +19,16 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "installermanual.h"
 
-#include <igamefeatures.h>
-#include <iinstallationmanager.h>
-#include <iplugingame.h>
-#include <moddatachecker.h>
-#include <utility.h>
-
 #include <QDialog>
 #include <QtPlugin>
 
 #include <Shellapi.h>
+
+#include <uibase/game_features/igamefeatures.h>
+#include <uibase/game_features/moddatachecker.h>
+#include <uibase/iinstallationmanager.h>
+#include <uibase/iplugingame.h>
+#include <uibase/utility.h>
 
 #include "installdialog.h"
 
