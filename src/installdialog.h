@@ -20,20 +20,21 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef INSTALLDIALOG_H
 #define INSTALLDIALOG_H
 
-#include "archivetree.h"
-#include "tutorabledialog.h"
-#include <guessedvalue.h>
-#include <ifiletree.h>
-
-#include <iplugingame.h>
-#include <moddatachecker.h>
-
 #include <QDialog>
 #include <QProgressDialog>
 #include <QTreeWidgetItem>
 #include <QUuid>
+
+#include <uibase/game_features/moddatachecker.h>
+#include <uibase/guessedvalue.h>
+#include <uibase/ifiletree.h>
+#include <uibase/iplugingame.h>
+#include <uibase/tutorabledialog.h>
+
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+#include "archivetree.h"
 
 namespace Ui
 {

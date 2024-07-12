@@ -22,7 +22,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QTreeWidget>
 
-#include "ifiletree.h"
+#include <uibase/ifiletree.h>
 
 class ArchiveTreeWidget;
 
