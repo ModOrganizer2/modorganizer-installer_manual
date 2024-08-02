@@ -20,15 +20,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "installdialog.h"
 #include "ui_installdialog.h"
 
-#include "log.h"
-#include "report.h"
-#include "utility.h"
-
 #include <QCompleter>
 #include <QInputDialog>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMetaType>
+
+#include <uibase/log.h>
+#include <uibase/report.h>
+#include <uibase/utility.h>
 
 using namespace MOBase;
 

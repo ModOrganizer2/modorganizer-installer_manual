@@ -20,15 +20,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef INSTALLERMANUAL_H
 #define INSTALLERMANUAL_H
 
-#include <imoinfo.h>
-#include <iplugininstallersimple.h>
+#include <uibase/imoinfo.h>
+#include <uibase/iplugininstallersimple.h>
 
 class InstallerManual : public MOBase::IPluginInstallerSimple
 {
   Q_OBJECT
   Q_INTERFACES(MOBase::IPlugin MOBase::IPluginInstaller MOBase::IPluginInstallerSimple)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  Q_PLUGIN_METADATA(IID "org.tannin.InstallerManual" FILE "installermanual.json")
+  Q_PLUGIN_METADATA(IID "org.tannin.InstallerManual")
 #endif
 
 public:
