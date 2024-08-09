@@ -4,23 +4,23 @@
 <context>
     <name>ArchiveTreeWidget</name>
     <message>
-        <location filename="archivetree.cpp" line="433"/>
-        <location filename="archivetree.cpp" line="443"/>
+        <location filename="archivetree.cpp" line="435"/>
+        <location filename="archivetree.cpp" line="445"/>
         <source>Cannot drop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="archivetree.cpp" line="434"/>
+        <location filename="archivetree.cpp" line="436"/>
         <source>Cannot drop &apos;%1&apos; into one of its subfolder.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="archivetree.cpp" line="445"/>
+        <location filename="archivetree.cpp" line="447"/>
         <source>A file &apos;%1&apos; already exists in folder &apos;%2&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="archivetree.cpp" line="448"/>
+        <location filename="archivetree.cpp" line="450"/>
         <source>A folder &apos;%1&apos; already exists in folder &apos;%2&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -153,11 +153,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="installermanual.cpp" line="52"/>
         <source>Manual Installer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="installermanual.cpp" line="62"/>
-        <source>Fallback installer for mods that can be extracted but can&apos;t be handled by another installer</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

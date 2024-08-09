@@ -52,22 +52,6 @@ QString InstallerManual::localizedName() const
   return tr("Manual Installer");
 }
 
-QString InstallerManual::author() const
-{
-  return "Tannin, Holt59";
-}
-
-QString InstallerManual::description() const
-{
-  return tr("Fallback installer for mods that can be extracted but can't be handled by "
-            "another installer");
-}
-
-VersionInfo InstallerManual::version() const
-{
-  return VersionInfo(1, 0, 1, VersionInfo::RELEASE_FINAL);
-}
-
 QList<PluginSetting> InstallerManual::settings() const
 {
   return QList<PluginSetting>();
