@@ -151,7 +151,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>InstallerManual</name>
     <message>
-        <location filename="installermanual.cpp" line="52"/>
+        <location filename="installermanual.cpp" line="50"/>
         <source>Manual Installer</source>
         <translation type="unfinished"></translation>
     </message>
