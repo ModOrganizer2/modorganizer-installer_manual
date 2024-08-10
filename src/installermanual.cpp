@@ -22,8 +22,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDialog>
 #include <QtPlugin>
 
-#include <Shellapi.h>
-
 #include <uibase/game_features/igamefeatures.h>
 #include <uibase/game_features/moddatachecker.h>
 #include <uibase/iinstallationmanager.h>
@@ -52,25 +50,9 @@ QString InstallerManual::localizedName() const
   return tr("Manual Installer");
 }
 
-QString InstallerManual::author() const
+QList<Setting> InstallerManual::settings() const
 {
-  return "Tannin, Holt59";
-}
-
-QString InstallerManual::description() const
-{
-  return tr("Fallback installer for mods that can be extracted but can't be handled by "
-            "another installer");
-}
-
-VersionInfo InstallerManual::version() const
-{
-  return VersionInfo(1, 0, 1, VersionInfo::RELEASE_FINAL);
-}
-
-QList<PluginSetting> InstallerManual::settings() const
-{
-  return QList<PluginSetting>();
+  return {};
 }
 
 unsigned int InstallerManual::priority() const
@@ -91,18 +73,7 @@ bool InstallerManual::isArchiveSupported(std::shared_ptr<const MOBase::IFileTree
 void InstallerManual::openFile(const FileTreeEntry* entry)
 {
   QString tempName = manager()->extractFile(entry->shared_from_this());
-
-  SHELLEXECUTEINFOW execInfo;
-  memset(&execInfo, 0, sizeof(SHELLEXECUTEINFOW));
-  execInfo.cbSize        = sizeof(SHELLEXECUTEINFOW);
-  execInfo.fMask         = SEE_MASK_NOCLOSEPROCESS;
-  execInfo.lpVerb        = L"open";
-  std::wstring fileNameW = ToWString(tempName);
-  execInfo.lpFile        = fileNameW.c_str();
-  execInfo.nShow         = SW_SHOWNORMAL;
-  if (!::ShellExecuteExW(&execInfo)) {
-    qCritical("failed to spawn %s: %d", qUtf8Printable(tempName), ::GetLastError());
-  }
+  shell::Open(tempName);
 }
 
 IPluginInstaller::EInstallResult
