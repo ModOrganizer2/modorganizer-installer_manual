@@ -50,9 +50,9 @@ QString InstallerManual::localizedName() const
   return tr("Manual Installer");
 }
 
-QList<PluginSetting> InstallerManual::settings() const
+QList<Setting> InstallerManual::settings() const
 {
-  return QList<PluginSetting>();
+  return {};
 }
 
 unsigned int InstallerManual::priority() const
