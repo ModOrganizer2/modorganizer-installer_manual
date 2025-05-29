@@ -23,9 +23,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDragMoveEvent>
 #include <QMessageBox>
 
-#include <ifiletree.h>
-#include <log.h>
-#include <report.h>
+#include <uibase/ifiletree.h>
+#include <uibase/log.h>
+#include <uibase/report.h>
 
 using namespace MOBase;
 
@@ -352,8 +352,9 @@ void ArchiveTreeWidget::dragEnterEvent(QDragEnterEvent* event)
 
 void ArchiveTreeWidget::dragMoveEvent(QDragMoveEvent* event)
 {
-  if (!testMovePossible(static_cast<ArchiveTreeWidgetItem*>(currentItem()),
-                        static_cast<ArchiveTreeWidgetItem*>(itemAt(event->pos())))) {
+  if (!testMovePossible(
+          static_cast<ArchiveTreeWidgetItem*>(currentItem()),
+          static_cast<ArchiveTreeWidgetItem*>(itemAt(event->position().toPoint())))) {
     event->ignore();
   } else {
     QTreeWidget::dragMoveEvent(event);
@@ -402,7 +403,8 @@ void ArchiveTreeWidget::dropEvent(QDropEvent* event)
   event->ignore();
 
   // target widget (should be a directory)
-  auto* target = static_cast<ArchiveTreeWidgetItem*>(itemAt(event->pos()));
+  auto* target =
+      static_cast<ArchiveTreeWidgetItem*>(itemAt(event->position().toPoint()));
 
   // this should not really happen because it is prevent by dragMoveEvent
   if (target->flags().testFlag(Qt::ItemNeverHasChildren)) {
